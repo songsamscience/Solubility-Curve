@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>송쌤과학 용해도 곡선 분석 시뮬레이션</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=Orbitron:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ========= THEME ========= */
+:root, [data-theme="light"] {
+  --bg:#f0f4f9; --card:#fff; --card-hd:#f6f9ff; --graph-bg:#fafcff;
+  --grid:#e2e8f0; --grid2:#f0f2f5; --axis:#90a4ae; --ax-txt:#546e7a; --ax-title:#37474f;
+  --lbl-bg:rgba(255,255,255,0.93); --lbl-bd:rgba(0,0,0,0.06);
+  --sol-bg:rgba(255,255,255,0.95); --red-bg:rgba(255,245,245,0.95);
+  --gv:rgba(21,101,192,0.16); --gh:rgba(21,101,192,0.09);
+  --blue:#1565c0; --blue-lt:#e3f0ff; --green:#2e7d32; --orange:#e65100; --red:#c62828;
+  --txt:#1a2a3a; --txt2:#455a64; --txt3:#78909c; --border:#dfe6ed;
+  --shadow:0 2px 12px rgba(0,0,0,0.06);
+  --inp-bg:#f0f4f8; --sl-l:#90caf9; --sl-r:#ef9a9a; --thumb:#fff;
+  --tab-bg:#eef2f7; --tab-on:#fff;
+  --info-bg:#f0f7ff; --info-bd:#dce8f8;
+  --qbg:#f0f4f8; --qo-bg:#fff; --qo-ok:#e8f5e9; --qo-no:#ffebee; --qo-sh:#f1f8e9;
+  --ht-bg:#fff5f5; --ht-bd:#ffcdd2; --cl-bg:#f0f7ff; --cl-bd:#bbdefb;
+  --rs-bg:#fafafa; --rs-bd:#e0e0e0;
+  --leg-bg:#f5f8fc; --dot-e:#e0e0e0; --dot-b:#bbb;
+  --tog-bg:#dce4ee; --tog-k:#fff; --tog-i:'☀️';
+  --dot-outline:#fff;
+}
+[data-theme="dark"] {
+  --bg:#0d1520; --card:#15202e; --card-hd:#1a2838; --graph-bg:#111c2a;
+  --grid:#1e3044; --grid2:#172536; --axis:#4a6275; --ax-txt:#7e9aae; --ax-title:#a0b8c8;
+  --lbl-bg:rgba(17,28,42,0.93); --lbl-bd:rgba(255,255,255,0.08);
+  --sol-bg:rgba(17,28,42,0.95); --red-bg:rgba(40,18,18,0.94);
+  --gv:rgba(66,165,245,0.16); --gh:rgba(66,165,245,0.09);
+  --blue:#42a5f5; --blue-lt:rgba(66,165,245,0.12); --green:#66bb6a; --orange:#ffa726; --red:#ef5350;
+  --txt:#e0eaf4; --txt2:#a0b4c4; --txt3:#6a8698; --border:#1e3044;
+  --shadow:0 2px 16px rgba(0,0,0,0.25);
+  --inp-bg:#0d1520; --sl-l:#1565c0; --sl-r:#c62828; --thumb:#ccd8e4;
+  --tab-bg:#0d1520; --tab-on:#1a2838;
+  --info-bg:#111e2e; --info-bd:#1e3044;
+  --qbg:#0d1520; --qo-bg:#15202e; --qo-ok:rgba(46,125,50,0.18); --qo-no:rgba(198,40,40,0.18); --qo-sh:rgba(46,125,50,0.12);
+  --ht-bg:rgba(198,40,40,0.08); --ht-bd:rgba(198,40,40,0.3);
+  --cl-bg:rgba(21,101,192,0.08); --cl-bd:rgba(21,101,192,0.3);
+  --rs-bg:rgba(255,255,255,0.04); --rs-bd:#2a3a4a;
+  --leg-bg:rgba(255,255,255,0.03); --dot-e:#2a3a4a; --dot-b:#3a4a5a;
+  --tog-bg:#1a2838; --tog-k:#42a5f5; --tog-i:'🌙';
+  --dot-outline:#1a2838;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+
+body{
+  font-family:'Noto Sans KR',-apple-system,sans-serif;
+  background:var(--bg);color:var(--txt);
+  min-height:100vh;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  transition:background .3s,color .3s;
+}
+
+.wrap{max-width:1200px;margin:0 auto;padding:12px}
+
+/* ===== HEADER ===== */
+.hdr{text-align:center;padding:14px 12px 8px;position:relative}
+.hdr h1{font-size:1.3rem;font-weight:900;color:var(--blue);margin-bottom:2px;line-height:1.3}
+.hdr .sub{font-size:0.76rem;color:var(--txt3);letter-spacing:.5px}
+.copy-tag{display:inline-block;margin-top:4px;font-size:.64rem;color:var(--txt3);background:var(--card);border:1px solid var(--border);padding:3px 10px;border-radius:16px;font-family:'JetBrains Mono',monospace}
+.copy-tag b{color:var(--blue)}
+
+/* TOGGLE */
+.theme-toggle{
+  position:absolute;top:12px;right:10px;
+  width:50px;height:26px;border-radius:13px;
+  background:var(--tog-bg);border:1px solid var(--border);
+  cursor:pointer;padding:2px;display:flex;align-items:center;
+  transition:background .3s;
+}
+.theme-toggle .knob{
+  width:20px;height:20px;border-radius:50%;
+  background:var(--tog-k);box-shadow:0 1px 4px rgba(0,0,0,.2);
+  transition:transform .3s,background .3s;
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+}
+.theme-toggle .knob::after{content:var(--tog-i)}
+[data-theme="dark"] .theme-toggle .knob{transform:translateX(24px)}
+
+/* ===== DIGITAL ===== */
+.digi-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}
+.digi{background:var(--card);border-radius:10px;padding:8px 10px;border:1px solid var(--border);box-shadow:var(--shadow);position:relative;overflow:hidden;transition:background .3s,border-color .3s}
+.digi::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,var(--blue),var(--green))}
+.digi .lbl{font-size:.55rem;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace;margin-bottom:1px}
+.digi .val{font-family:'Orbitron',sans-serif;font-size:1.05rem;font-weight:700;color:var(--blue)}
+.digi .val .u{font-size:.5rem;color:var(--txt3);font-weight:400;margin-left:1px}
+.digi.st .val{font-family:'Noto Sans KR',sans-serif;font-size:.82rem;font-weight:800}
+.digi.st .val.unsat{color:var(--green)} .digi.st .val.sat{color:var(--orange)} .digi.st .val.super{color:var(--red)}
+
+/* ===== LAYOUT ===== */
+.grid{display:grid;grid-template-columns:1fr 350px;gap:14px;margin-top:8px;align-items:start}
+
+/* ===== CARD ===== */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);transition:background .3s,border-color .3s}
+.card-hd{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--card-hd);font-size:.83rem;font-weight:700;transition:background .3s}
+.card-bd{padding:12px}
+
+/* ===== GRAPH ===== */
+.graph-wrap{background:var(--graph-bg);border:1px solid var(--border);border-radius:10px;padding:4px;position:relative;transition:background .3s,border-color .3s;touch-action:pan-y pinch-zoom}
+canvas{width:100%;display:block;border-radius:6px;touch-action:none}
+.legend-bar{display:flex;align-items:center;gap:12px;padding:5px 8px;margin-top:5px;font-size:.7rem;color:var(--txt2);background:var(--leg-bg);border-radius:6px;flex-wrap:wrap;transition:background .3s}
+.legend-bar .li{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.ldot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.ldot.rd{background:#e53935;border:2px solid #c62828} .ldot.bl{background:transparent;border:2px solid var(--blue)}
+
+/* ===== SUBS ===== */
+.subs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:10px}
+.sub-btn{display:flex;align-items:center;gap:5px;padding:7px 9px;border-radius:8px;border:1.5px solid transparent;background:var(--inp-bg);cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--txt);font-size:.74rem;font-weight:500;transition:all .15s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub-btn:active{background:var(--blue-lt)}
+.sub-btn.on{background:var(--blue-lt);border-color:var(--blue);font-weight:700}
+.sub-btn .cd{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sub-btn .sv{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--txt3);flex-shrink:0}
+
+/* ===== TABS ===== */
+.tabs{display:flex;gap:2px;background:var(--tab-bg);border-radius:10px;padding:3px;margin-bottom:12px;transition:background .3s}
+.tab{flex:1;padding:8px 4px;border:none;background:transparent;color:var(--txt3);font-family:'Noto Sans KR',sans-serif;font-size:.78rem;font-weight:600;border-radius:8px;cursor:pointer;transition:all .15s}
+.tab.on{background:var(--tab-on);color:var(--blue);box-shadow:var(--shadow)}
+.tc{display:none}.tc.on{display:block}
+
+/* ===== SLIDER ===== */
+.sg{margin-bottom:10px}
+.sg .sl{display:flex;justify-content:space-between;font-size:.76rem;color:var(--txt2);margin-bottom:4px;font-weight:500}
+.sg .sl .v{font-family:'Orbitron',sans-serif;color:var(--blue);font-weight:700;font-size:.8rem}
+input[type="range"]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--sl-l),var(--sl-r));outline:none}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--thumb);border:3px solid var(--blue);box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:grab}
+input[type="range"]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--thumb);border:3px solid var(--blue);box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:grab}
+
+/* ===== INPUT (16px prevents iOS zoom) ===== */
+.inp-grp{margin-bottom:10px}
+.inp-grp .il{font-size:.76rem;color:var(--txt2);display:block;margin-bottom:4px;font-weight:500}
+.inp-row{display:flex;gap:6px;align-items:center}
+.inp-row input[type="number"]{flex:1;padding:9px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--inp-bg);color:var(--txt);font-family:'Orbitron',sans-serif;font-size:16px;outline:none;min-width:0;transition:border-color .2s}
+.inp-row input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,.12)}
+.inp-row .uu{font-size:.75rem;color:var(--txt3);flex-shrink:0}
+
+/* ===== BUTTONS ===== */
+.btns{display:flex;gap:6px;margin-bottom:10px}
+.btn{flex:1;padding:10px 4px;border-radius:10px;border:1.5px solid;background:transparent;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:.78rem;font-weight:700;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:3px}
+.btn.ht{border-color:var(--ht-bd);color:var(--red);background:var(--ht-bg)}
+.btn.cl{border-color:var(--cl-bd);color:var(--blue);background:var(--cl-bg)}
+.btn.rs{border-color:var(--rs-bd);color:var(--txt3);background:var(--rs-bg)}
+
+/* ===== INFO ===== */
+.info{background:var(--info-bg);border:1px solid var(--info-bd);border-radius:10px;padding:10px 12px;font-size:.78rem;line-height:1.7;color:var(--txt2);margin-top:8px;transition:background .3s,border-color .3s}
+.info b{color:var(--txt)} .info .hl{font-weight:700}
+.info .hl.bl{color:var(--blue)} .info .hl.or{color:var(--orange)}
+.info .hl.rd{color:var(--red)} .info .hl.gr{color:var(--green)}
+
+/* ===== QUIZ ===== */
+.qz-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.qz-sc{font-family:'Orbitron',sans-serif;font-size:.88rem;color:var(--blue);font-weight:700}
+.qz-pg{display:flex;gap:3px;flex-wrap:wrap}
+.qd{width:10px;height:10px;border-radius:50%;background:var(--dot-e);border:1.5px solid var(--dot-b)}
+.qd.ok{background:var(--green);border-color:var(--green)} .qd.no{background:var(--red);border-color:var(--red)}
+.qd.cur{border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,.18)}
+.qz-q{background:var(--qbg);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;transition:background .3s}
+.qz-q .qn{font-family:'Orbitron',sans-serif;font-size:.6rem;color:var(--blue);margin-bottom:5px;letter-spacing:1.5px}
+.qz-q .qt{font-size:.86rem;font-weight:600;line-height:1.65}
+.qz-opts{display:flex;flex-direction:column;gap:5px}
+.qo{padding:11px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--qo-bg);cursor:pointer;font-size:.84rem;font-family:'Noto Sans KR',sans-serif;color:var(--txt);transition:all .15s;text-align:left}
+.qo:active:not(.dis){background:var(--blue-lt)}
+.qo.sel.ok-a{background:var(--qo-ok);border-color:var(--green);color:var(--green);font-weight:700}
+.qo.sel.no-a{background:var(--qo-no);border-color:var(--red);color:var(--red);font-weight:700}
+.qo.show-ok{border-color:var(--green);color:var(--green);background:var(--qo-sh)}
+.qo.dis{cursor:default;opacity:.55}
+.qz-nav{display:flex;gap:6px;margin-top:10px}
+.qz-nav button{flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--blue-lt);color:var(--blue);font-family:'Noto Sans KR',sans-serif;font-size:.84rem;font-weight:700;cursor:pointer;transition:all .15s}
+.qz-nav button:disabled{opacity:.25;cursor:default}
+.qz-res{text-align:center;padding:20px 12px}
+.qz-res .big{font-family:'Orbitron',sans-serif;font-size:2.4rem;font-weight:900;margin-bottom:4px}
+.qz-res .big.p{color:var(--green)} .qz-res .big.g{color:var(--blue)} .qz-res .big.m{color:var(--orange)} .qz-res .big.l{color:var(--red)}
+.qz-res .mg{font-size:.88rem;color:var(--txt2);margin-bottom:14px}
+.hint-txt{font-size:.68rem;color:var(--txt3);margin-bottom:8px}
+
+/* ===== NOTES (내용정리) ===== */
+.notes{font-size:.84rem;line-height:1.85;color:var(--txt)}
+.notes .sec{margin-bottom:16px}
+.notes .sec-title{
+  display:flex;align-items:center;gap:6px;
+  font-size:.9rem;font-weight:800;color:var(--blue);
+  margin-bottom:8px;padding-bottom:6px;
+  border-bottom:2px solid var(--blue);
+}
+.notes .sec-title .num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:6px;
+  background:var(--blue);color:#fff;
+  font-family:'Orbitron',sans-serif;font-size:.65rem;font-weight:700;
+  flex-shrink:0;
+}
+[data-theme="dark"] .notes .sec-title .num{color:#0d1520}
+.notes p{margin-bottom:6px;padding-left:2px}
+.notes .sub-title{font-weight:700;color:var(--txt);margin:10px 0 6px;font-size:.84rem}
+.notes .fact-list{margin:4px 0 8px;padding-left:0;list-style:none}
+.notes .fact-list li{
+  position:relative;padding:7px 10px 7px 28px;
+  margin-bottom:4px;border-radius:8px;
+  background:var(--inp-bg);font-size:.8rem;
+  line-height:1.6;transition:background .3s;
+}
+.notes .fact-list li::before{
+  content:'✦';position:absolute;left:9px;top:7px;
+  color:var(--blue);font-size:.7rem;
+}
+.notes .highlight-box{
+  margin-top:10px;padding:12px 14px;
+  border-radius:10px;border-left:4px solid var(--orange);
+  background:var(--info-bg);
+  font-size:.82rem;line-height:1.7;
+  transition:background .3s;
+}
+.notes .highlight-box .key{color:var(--orange);font-weight:800}
+.notes .highlight-box b{color:var(--txt)}
+
+/* ===== MOBILE ===== */
+@media(max-width:860px){
+  .grid{grid-template-columns:1fr}
+  .hdr h1{font-size:1.12rem}
+}
+@media(max-width:480px){
+  .wrap{padding:5px}
+  .hdr{padding:10px 8px 6px}
+  .hdr h1{font-size:1rem}
+  .hdr .sub{font-size:.66rem}
+  .digi-row{gap:4px}
+  .digi{padding:7px 8px;border-radius:8px}
+  .digi .lbl{font-size:.5rem}
+  .digi .val{font-size:.9rem}
+  .digi .val .u{font-size:.44rem}
+  .digi.st .val{font-size:.72rem}
+  .card-hd{padding:9px 12px;font-size:.8rem}
+  .card-bd{padding:8px}
+  .sub-btn{font-size:.66rem;padding:5px 6px;gap:4px}
+  .sub-btn .sv{font-size:.54rem}
+  .tab{font-size:.73rem;padding:7px 2px}
+  .sg .sl{font-size:.72rem}
+  .sg .sl .v{font-size:.76rem}
+  .btn{font-size:.73rem;padding:9px 3px}
+  .info{font-size:.72rem;padding:8px 10px}
+  .qz-q .qt{font-size:.8rem}
+  .qo{font-size:.78rem;padding:9px 11px}
+  .qz-nav button{font-size:.78rem;padding:9px}
+  .legend-bar{font-size:.62rem;gap:6px;padding:4px 6px}
+  .theme-toggle{top:8px;right:5px;width:44px;height:22px;border-radius:11px}
+  .theme-toggle .knob{width:16px;height:16px;font-size:9px}
+  [data-theme="dark"] .theme-toggle .knob{transform:translateX(22px)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <h1>송쌤과학 용해도 곡선 분석 시뮬레이션</h1>
+    <div class="sub">Solubility Curve Analysis Simulator</div>
+    <div class="copy-tag">© <b>송쌤과학</b> All Rights Reserved</div>
+    <div class="theme-toggle" onclick="toggleTheme()"><div class="knob"></div></div>
+  </div>
+
+  <div class="digi-row">
+    <div class="digi"><div class="lbl">TEMPERATURE</div><div class="val" id="dT">40<span class="u">℃</span></div></div>
+    <div class="digi"><div class="lbl">SOLUBILITY</div><div class="val" id="dS">105.0<span class="u">g/100g H₂O</span></div></div>
+    <div class="digi st"><div class="lbl">STATUS</div><div class="val unsat" id="dSt">불포화</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card" id="graphCard">
+      <div class="card-hd"><span>📈</span> 용해도 곡선 그래프</div>
+      <div class="card-bd">
+        <div class="graph-wrap"><canvas id="cv"></canvas></div>
+        <div class="legend-bar">
+          <div class="li"><div class="ldot bl"></div> 용해도 (곡선 위 포인트)</div>
+          <div class="li"><div class="ldot rd"></div> <b>용질의 양</b> (투입 g)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><span>⚙️</span> 제어판</div>
+      <div class="card-bd">
+        <div class="tabs">
+          <button class="tab on" onclick="tabGo('explore')">탐색</button>
+          <button class="tab" onclick="tabGo('hc')">가열·냉각</button>
+          <button class="tab" onclick="tabGo('quiz')">문제풀기</button>
+          <button class="tab" onclick="tabGo('notes')">내용정리</button>
+        </div>
+
+        <div class="tc on" id="tc-explore">
+          <div class="sg"><div class="sl">온도 <span class="v" id="tvE">40 ℃</span></div><input type="range" id="tsE" min="0" max="100" value="40"></div>
+          <div class="inp-grp"><span class="il">🔴 용질의 양 (물 100g 기준)</span><div class="inp-row"><input type="number" id="amtE" value="30" min="0" max="260" step="1"><span class="uu">g</span></div></div>
+          <div class="hint-txt">* 그래프 위를 터치/드래그하여 온도별 용해도를 확인하세요</div>
+          <div class="subs" id="sl1"></div>
+          <div class="info" id="infoE">온도와 용질의 양을 조절하여 <span class="hl bl">포화·불포화·석출</span> 상태를 확인하세요.</div>
+        </div>
+
+        <div class="tc" id="tc-hc">
+          <div class="hint-txt" style="margin-bottom:8px">물질 선택 → 온도·용질 설정 → 가열/냉각</div>
+          <div class="subs" id="sl2"></div>
+          <div class="sg"><div class="sl">초기 온도 <span class="v" id="tvH">60 ℃</span></div><input type="range" id="tsH" min="0" max="100" value="60"></div>
+          <div class="inp-grp"><span class="il">🔴 용질의 양 (물 100g 기준)</span><div class="inp-row"><input type="number" id="amtH" value="80" min="0" max="260" step="1"><span class="uu">g</span></div></div>
+          <div class="sg"><div class="sl">목표 온도 <span class="v" id="tvT">20 ℃</span></div><input type="range" id="tsT" min="0" max="100" value="20"></div>
+          <div class="btns">
+            <button class="btn ht" onclick="doHC('heat')">🔥 가열</button>
+            <button class="btn cl" onclick="doHC('cool')">❄️ 냉각</button>
+            <button class="btn rs" onclick="resetHC()">↺ 초기화</button>
+          </div>
+          <div class="info" id="infoH">가열·냉각 시 <span class="hl bl">용해</span> 및 <span class="hl or">석출</span> 변화를 관찰합니다.</div>
+        </div>
+
+        <div class="tc" id="tc-notes">
+          <div class="notes">
+            <div class="sec">
+              <div class="sec-title"><span class="num">1</span> 용해도 곡선</div>
+              <p>온도에 따른 물질의 용해도를 그래프로 나타낸 것을 <b>용해도 곡선</b>이라 합니다.</p>
+              <p>고체의 용해도는 대부분 <span class="hl bl">온도가 높아질수록 커집니다.</span></p>
+              <div class="sub-title">📌 용해도 곡선으로 알 수 있는 사실</div>
+              <ul class="fact-list">
+                <li><b>용질의 종류</b>에 따라 녹는 양이 다르다.</li>
+                <li><b>용매의 온도</b>에 따라 녹는 양이 다르다.</li>
+                <li>온도에 따른 물질의 용해도를 <b>쉽게 비교</b>할 수 있다.</li>
+                <li>용액을 냉각할 때 <b>석출되는 용질의 양</b>을 알 수 있다.</li>
+              </ul>
+            </div>
+            <div class="sec">
+              <div class="sec-title"><span class="num">2</span> 용해도는 물질의 특성</div>
+              <div class="highlight-box">
+                온도와 용매가 같을 때 용해도는 물질마다 다르고, <b>일정한 값</b>을 나타내므로 물질을 구별할 수 있는 <span class="key">물질의 특성</span>이다.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tc" id="tc-quiz"><div id="qzBox"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ge = id => document.getElementById(id);
+
+// ===== THEME =====
+function isDark(){ return document.documentElement.getAttribute('data-theme')==='dark'; }
+function toggleTheme(){
+  document.documentElement.setAttribute('data-theme', isDark()?'light':'dark');
+  mkList('sl1','main'); mkList('sl2','hc');
+  render();
+}
+function cv_(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+// ===== DATA =====
+const SS=[
+  {n:'질산 나트륨',c:'#e65100',cd:'#ff9100',d:{0:73,10:80,20:88,30:96,40:105,50:114,60:125,70:136,80:148,90:163,100:180}},
+  {n:'질산 칼륨',c:'#c2185b',cd:'#f06292',d:{0:13,10:20,20:32,30:45,40:64,50:86,60:110,70:138,80:169,90:200,100:246}},
+  {n:'염화 칼륨',c:'#6a1b9a',cd:'#ba68c8',d:{0:28,10:31,20:34,30:37,40:40,50:43,60:46,70:49,80:52,90:55,100:58}},
+  {n:'황산 구리(II)',c:'#00695c',cd:'#4db6ac',d:{0:14,10:17,20:21,30:25,40:29,50:34,60:40,70:47,80:55,90:64,100:75}},
+  {n:'염화 나트륨',c:'#f57f17',cd:'#ffd54f',d:{0:35.7,10:35.8,20:36,30:36.3,40:36.6,50:37,60:37.3,70:37.8,80:38.4,90:39,100:39.8}},
+  {n:'붕산',c:'#0277bd',cd:'#4fc3f7',d:{0:2.7,10:3.6,20:5,30:7.2,40:10.5,50:14.8,60:20.2,70:27,80:34,90:41,100:50}}
+];
+function sC(i){return isDark()?SS[i].cd:SS[i].c}
+
+let sel=0,temp=40,amt=30,hcSel=0,hcM=null,af=null;
+
+function sol(i,t){
+  const d=SS[i].d,ks=Object.keys(d).map(Number);
+  if(t<=ks[0])return d[ks[0]];
+  if(t>=ks[ks.length-1])return d[ks[ks.length-1]];
+  for(let k=0;k<ks.length-1;k++)
+    if(t>=ks[k]&&t<=ks[k+1])return d[ks[k]]+(t-ks[k])/(ks[k+1]-ks[k])*(d[ks[k+1]]-d[ks[k]]);
+  return 0;
+}
+
+// ===== CANVAS =====
+const cvs=ge('cv'), cx=cvs.getContext('2d');
+const PR=Math.min(window.devicePixelRatio||1,3);
+let M,W,H,pW,pH;
+function isMob(){return window.innerWidth<=600}
+
+function resize(){
+  const mob=isMob();
+  M=mob?{t:28,r:14,b:44,l:46}:{t:32,r:28,b:52,l:66};
+  const r=cvs.parentElement.getBoundingClientRect();
+  W=r.width-8;
+  H=mob?Math.max(W*1.05,360):Math.max(Math.min(W*0.75,640),500);
+  cvs.width=W*PR;cvs.height=H*PR;
+  cvs.style.width=W+'px';cvs.style.height=H+'px';
+  cx.setTransform(PR,0,0,PR,0,0);
+  pW=W-M.l-M.r;pH=H-M.t-M.b;
+}
+
+const YMAX=200;
+function tX(t){return M.l+(t/100)*pW}
+function sY(s){return M.t+pH-(s/YMAX)*pH}
+function xT(x){return Math.max(0,Math.min(100,(x-M.l)/pW*100))}
+
+// ===== DRAW GRID =====
+function drawGrid(){
+  const mob=isMob(),fs=mob?10:12;
+  cx.fillStyle=cv_('--graph-bg');cx.fillRect(0,0,W,H);
+
+  // Minor grid
+  cx.lineWidth=.4;cx.strokeStyle=cv_('--grid2');
+  for(let t=10;t<100;t+=10){if(t%20===0)continue;cx.beginPath();cx.moveTo(tX(t),M.t);cx.lineTo(tX(t),M.t+pH);cx.stroke()}
+  for(let s=20;s<YMAX;s+=20){if(s%40===0)continue;cx.beginPath();cx.moveTo(M.l,sY(s));cx.lineTo(M.l+pW,sY(s));cx.stroke()}
+
+  // Major grid
+  cx.lineWidth=.7;
+  for(let t=0;t<=100;t+=20){cx.strokeStyle=cv_('--grid');cx.beginPath();cx.moveTo(tX(t),M.t);cx.lineTo(tX(t),M.t+pH);cx.stroke()}
+  for(let s=0;s<=YMAX;s+=40){cx.strokeStyle=cv_('--grid');cx.beginPath();cx.moveTo(M.l,sY(s));cx.lineTo(M.l+pW,sY(s));cx.stroke()}
+
+  // Axes
+  cx.strokeStyle=cv_('--axis');cx.lineWidth=1.5;
+  cx.beginPath();cx.moveTo(M.l,M.t);cx.lineTo(M.l,M.t+pH);cx.lineTo(M.l+pW,M.t+pH);cx.stroke();
+
+  // Ticks
+  cx.fillStyle=cv_('--ax-txt');
+  cx.font=`500 ${fs}px "JetBrains Mono",monospace`;
+  cx.textAlign='center';
+  for(let t=0;t<=100;t+=20)cx.fillText(t,tX(t),M.t+pH+16+(mob?0:2));
+  cx.textAlign='right';
+  for(let s=0;s<=YMAX;s+=40)cx.fillText(s,M.l-6,sY(s)+4);
+
+  // Axis titles
+  cx.fillStyle=cv_('--ax-title');
+  cx.font=`700 ${mob?10:13}px "Noto Sans KR",sans-serif`;
+  cx.textAlign='center';
+  cx.fillText('온도 (℃)',M.l+pW/2,H-(mob?4:5));
+  cx.save();cx.translate(mob?10:14,M.t+pH/2);cx.rotate(-Math.PI/2);
+  cx.fillText('용해도 (g/100g 물)',0,0);cx.restore();
+}
+
+// ===== DRAW CURVES =====
+function drawCurves(){
+  const mob=isMob();
+  // Draw non-selected first, selected last (on top)
+  const order=SS.map((_,i)=>i).sort((a,b)=>a===sel?1:b===sel?-1:0);
+  order.forEach(idx=>{
+    const isSel=idx===sel;
+    cx.save();
+    cx.strokeStyle=sC(idx);
+    cx.lineWidth=isSel?(mob?3:4):(mob?1.4:1.8);
+    cx.globalAlpha=isSel?1:.28;
+    cx.beginPath();
+    for(let t=0;t<=100;t+=.5){const x=tX(t),y=sY(sol(idx,t));t===0?cx.moveTo(x,y):cx.lineTo(x,y)}
+    cx.stroke();cx.restore();
+  });
+
+  // Labels — carefully positioned to avoid overlap
+  const mob2=isMob();
+  const fz=mob2?9:12;
+  cx.font=`bold ${fz}px "Noto Sans KR",sans-serif`;
+
+  // Custom positions per substance to avoid overlap
+  const lps=[
+    {i:0,t:20,side:'above'},  // 질산 나트륨 — above curve at t=20
+    {i:1,t:75,side:'above'},  // 질산 칼륨 — above at t=75 (high area)
+    {i:2,t:80,side:'above'},  // 염화 칼륨 — above at t=80
+    {i:3,t:70,side:'below'},  // 황산 구리 — below at t=70
+    {i:4,t:50,side:'above'},  // 염화 나트륨 — above at t=50
+    {i:5,t:88,side:'below'}   // 붕산 — below at t=88
+  ];
+
+  lps.forEach(lp=>{
+    const v=sol(lp.i,lp.t);
+    const bx=tX(lp.t)+4;
+    const by=sY(v)+(lp.side==='above'?(-10):( fz+6));
+    const txt=SS[lp.i].n;
+    const tw=cx.measureText(txt).width;
+
+    // Clamp within graph bounds
+    const cx2=Math.max(M.l+2, Math.min(bx, M.l+pW-tw-8));
+    const cy2=Math.max(M.t+fz, Math.min(by, M.t+pH-4));
+
+    cx.fillStyle=cv_('--lbl-bg');
+    rr(cx,cx2-3,cy2-fz+1,tw+6,fz+4,3);cx.fill();
+    cx.strokeStyle=cv_('--lbl-bd');cx.lineWidth=.5;cx.stroke();
+    cx.fillStyle=sC(lp.i);cx.textAlign='left';cx.fillText(txt,cx2,cy2);
+  });
+}
+
+// ===== DRAW POINTER =====
+function drawPointer(){
+  const sv=sol(sel,temp),px=tX(temp),cyy=sY(sv);
+  const mob=isMob(),dotR=mob?6:8,fz=mob?10:12,dk=isDark();
+
+  cx.save();
+  // Vertical guide
+  cx.setLineDash([4,4]);cx.strokeStyle=cv_('--gv');cx.lineWidth=1;
+  cx.beginPath();cx.moveTo(px,M.t);cx.lineTo(px,M.t+pH);cx.stroke();cx.setLineDash([]);
+  // Horizontal guide
+  cx.setLineDash([3,3]);cx.strokeStyle=cv_('--gh');
+  cx.beginPath();cx.moveTo(M.l,cyy);cx.lineTo(px,cyy);cx.stroke();cx.setLineDash([]);
+
+  // Curve dot
+  cx.beginPath();cx.arc(px,cyy,dotR,0,Math.PI*2);
+  cx.fillStyle=sC(sel);cx.fill();
+  cx.strokeStyle=cv_('--dot-outline');cx.lineWidth=2.5;cx.stroke();
+
+  // Solubility label
+  cx.font=`bold ${fz}px "JetBrains Mono",monospace`;
+  const stxt=sv.toFixed(1)+'g';
+  const stw=cx.measureText(stxt).width;
+  let slx=px+dotR+8;
+  if(slx+stw+50>M.l+pW)slx=px-dotR-stw-50;
+
+  cx.fillStyle=cv_('--sol-bg');
+  rr(cx,slx-4,cyy-fz-1,stw+46,fz*2+8,5);cx.fill();
+  cx.strokeStyle=sC(sel)+'44';cx.lineWidth=1;cx.stroke();
+  cx.fillStyle=sC(sel);cx.textAlign='left';cx.fillText(stxt,slx,cyy+2);
+  cx.font=`500 ${mob?8:10}px "Noto Sans KR",sans-serif`;
+  cx.fillStyle=cv_('--txt3');cx.fillText('용해도',slx,cyy+fz+3);
+
+  // RED DOT
+  if(amt>0&&amt<=YMAX+30){
+    const ry=sY(Math.min(amt,YMAX));
+    // Connecting line
+    cx.setLineDash([3,3]);
+    cx.strokeStyle=dk?'rgba(239,83,80,.3)':'rgba(198,40,40,.3)';cx.lineWidth=1.2;
+    cx.beginPath();cx.moveTo(px,cyy);cx.lineTo(px,ry);cx.stroke();cx.setLineDash([]);
+    // Dot
+    cx.beginPath();cx.arc(px,ry,dotR,0,Math.PI*2);
+    cx.fillStyle=dk?'#ef5350':'#e53935';cx.fill();
+    cx.strokeStyle=cv_('--dot-outline');cx.lineWidth=2.5;cx.stroke();
+    // Pulse ring
+    cx.beginPath();cx.arc(px,ry,dotR+4,0,Math.PI*2);
+    cx.strokeStyle=dk?'rgba(239,83,80,.22)':'rgba(229,57,53,.18)';cx.lineWidth=2;cx.stroke();
+    // Label
+    cx.font=`bold ${fz}px "JetBrains Mono",monospace`;
+    const rtxt='용질 '+amt+'g';const rtw=cx.measureText(rtxt).width;
+    let rlx=px-dotR-rtw-14;if(rlx<M.l+4)rlx=px+dotR+8;
+
+    cx.fillStyle=cv_('--red-bg');
+    rr(cx,rlx-4,ry-fz/2-4,rtw+8,fz+8,5);cx.fill();
+    cx.strokeStyle=dk?'rgba(239,83,80,.3)':'rgba(229,57,53,.22)';cx.lineWidth=1;cx.stroke();
+    cx.fillStyle=dk?'#ef5350':'#c62828';cx.textAlign='left';cx.fillText(rtxt,rlx,ry+fz/2-1);
+  }
+  cx.restore();
+}
+
+// ===== DRAW HC MARKERS =====
+function drawHC(){
+  if(!hcM)return;
+  const{si,t0,t1,a}=hcM,mob=isMob(),fz=mob?9:11,dk=isDark();
+  cx.save();
+  const sx=tX(t0),sy=sY(Math.min(a,YMAX));
+  cx.beginPath();cx.arc(sx,sy,7,0,Math.PI*2);
+  cx.fillStyle=dk?'rgba(239,83,80,.12)':'rgba(244,67,54,.1)';cx.fill();
+  cx.strokeStyle=dk?'#ef5350':'#e53935';cx.lineWidth=2;cx.stroke();
+  cx.fillStyle=dk?'#ef5350':'#c62828';cx.font=`bold ${fz}px "Noto Sans KR"`;cx.textAlign='center';
+  cx.fillText('시작',sx,sy-12);
+
+  const ex=tX(t1),es=sol(si,t1),ey=sY(Math.min(a,es,YMAX));
+  cx.beginPath();cx.arc(ex,ey,7,0,Math.PI*2);
+  cx.fillStyle=dk?'rgba(66,165,245,.12)':'rgba(21,101,192,.1)';cx.fill();
+  cx.strokeStyle=dk?'#42a5f5':'#1565c0';cx.lineWidth=2;cx.stroke();
+  cx.fillStyle=dk?'#42a5f5':'#0d47a1';cx.font=`bold ${fz}px "Noto Sans KR"`;
+  cx.fillText('끝',ex,ey-12);
+
+  cx.setLineDash([6,4]);cx.strokeStyle=dk?'rgba(255,255,255,.08)':'rgba(0,0,0,.1)';cx.lineWidth=1.5;
+  cx.beginPath();cx.moveTo(sx,sy);cx.lineTo(ex,ey);cx.stroke();cx.setLineDash([]);
+  cx.restore();
+}
+
+function rr(c,x,y,w,h,r){
+  c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);
+  c.lineTo(x+w,y+h-r);c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);c.lineTo(x+r,y+h);
+  c.quadraticCurveTo(x,y+h,x,y+h-r);c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);c.closePath();
+}
+
+function render(){resize();drawGrid();drawCurves();drawPointer();drawHC();upDisp()}
+
+// ===== UPDATE DISPLAY =====
+function upDisp(){
+  const sv=sol(sel,temp);
+  ge('dT').innerHTML=temp+'<span class="u">℃</span>';
+  ge('dS').innerHTML=sv.toFixed(1)+'<span class="u">g/100g H₂O</span>';
+  const e=ge('dSt');
+  if(amt<sv-.5){e.textContent='불포화';e.className='val unsat'}
+  else if(amt>sv+.5){e.textContent='포화(석출)';e.className='val super'}
+  else{e.textContent='포화';e.className='val sat'}
+
+  const c=ge('infoE'),nm=SS[sel].n;
+  if(amt>sv+.5)c.innerHTML=`<b>${nm}</b> ${temp}℃ 용해도: <span class="hl bl">${sv.toFixed(1)}g</span><br>용질 ${amt}g 중 <span class="hl rd">${(amt-sv).toFixed(1)}g 석출</span>`;
+  else if(amt>=sv-.5)c.innerHTML=`<b>${nm}</b> ${temp}℃ 용해도: <span class="hl bl">${sv.toFixed(1)}g</span><br><span class="hl or">포화</span> 상태`;
+  else c.innerHTML=`<b>${nm}</b> ${temp}℃ 용해도: <span class="hl bl">${sv.toFixed(1)}g</span><br><span class="hl gr">${(sv-amt).toFixed(1)}g 추가 용해 가능</span> (불포화)`;
+
+  document.querySelectorAll('.ssv').forEach(el=>{el.textContent=sol(+el.dataset.i,temp).toFixed(1)+'g'});
+}
+
+// ===== SUBSTANCE LIST =====
+function mkList(id,mode){
+  const c=ge(id);c.innerHTML='';
+  const s=mode==='hc'?hcSel:sel;
+  SS.forEach((sub,i)=>{
+    const b=document.createElement('button');
+    b.className='sub-btn'+(i===s?' on':'');
+    b.innerHTML=`<span class="cd" style="background:${sC(i)}"></span>${sub.n}<span class="sv ssv" data-i="${i}">${sol(i,temp).toFixed(1)}g</span>`;
+    b.onclick=()=>{
+      if(mode==='hc')hcSel=i; else sel=i;
+      mkList('sl1','main');mkList('sl2','hc');
+      render();
+    };
+    c.appendChild(b);
+  });
+}
+
+// ===== TOUCH / MOUSE =====
+let touching=false;
+
+function ptrMove(e){
+  const r=cvs.getBoundingClientRect();
+  const clientX=e.touches?e.touches[0].clientX:e.clientX;
+  const mx=clientX-r.left;
+  if(mx>=M.l&&mx<=M.l+pW){
+    temp=Math.round(xT(mx));
+    ge('tsE').value=temp;ge('tvE').textContent=temp+' ℃';
+    render();
+  }
+}
+
+cvs.addEventListener('mousedown',()=>{touching=true});
+window.addEventListener('mouseup',()=>{touching=false});
+cvs.addEventListener('mousemove',e=>{if(touching||e.buttons===0)ptrMove(e)});
+
+cvs.addEventListener('touchstart',e=>{
+  touching=true;
+  e.preventDefault();
+  ptrMove(e);
+},{passive:false});
+
+cvs.addEventListener('touchmove',e=>{
+  if(touching){e.preventDefault();ptrMove(e)}
+},{passive:false});
+
+cvs.addEventListener('touchend',()=>{touching=false});
+
+cvs.addEventListener('click',e=>{
+  const r=cvs.getBoundingClientRect();
+  const mx=e.clientX-r.left,my=e.clientY-r.top;
+  if(mx>=M.l&&mx<=M.l+pW&&my>=M.t&&my<=M.t+pH){
+    const t=xT(mx),s=((M.t+pH-my)/pH)*YMAX;
+    let bi=0,bd=1e9;
+    SS.forEach((_,i)=>{const d=Math.abs(sol(i,t)-s);if(d<bd){bd=d;bi=i}});
+    sel=bi;mkList('sl1','main');mkList('sl2','hc');render();
+  }
+});
+
+ge('tsE').oninput=e=>{temp=+e.target.value;ge('tvE').textContent=temp+' ℃';render()};
+ge('amtE').oninput=e=>{amt=+e.target.value||0;render()};
+ge('tsH').oninput=e=>{ge('tvH').textContent=e.target.value+' ℃'};
+ge('tsT').oninput=e=>{ge('tvT').textContent=e.target.value+' ℃'};
+
+// ===== HEAT/COOL =====
+function doHC(mode){
+  const i=hcSel,t0=+ge('tsH').value,a=+ge('amtH').value||0;
+  let t1=+ge('tsT').value;
+  if(mode==='heat'&&t1<=t0)t1=Math.min(100,t0+20);
+  if(mode==='cool'&&t1>=t0)t1=Math.max(0,t0-20);
+  ge('tsT').value=t1;ge('tvT').textContent=t1+' ℃';
+  const s0=sol(i,t0),s1=sol(i,t1);
+  sel=i;hcM={si:i,t0,t1,a};
+  mkList('sl1','main');mkList('sl2','hc');
+  if(af)cancelAnimationFrame(af);
+  let p=0;
+  (function go(){
+    p+=.02;if(p>1)p=1;
+    temp=Math.round(t0+(t1-t0)*p);amt=a;
+    ge('tsE').value=temp;ge('tvE').textContent=temp+' ℃';ge('amtE').value=a;
+    render();
+    if(p<1)af=requestAnimationFrame(go);
+    else{
+      const inf=ge('infoH'),pr=Math.max(0,a-s1);
+      if(mode==='cool')inf.innerHTML=pr>0?`<b>${SS[i].n}</b> ${t0}℃→${t1}℃ 냉각<br>용해도: <span class="hl bl">${s0.toFixed(1)}g → ${s1.toFixed(1)}g</span><br>석출량: <span class="hl rd">${pr.toFixed(1)}g</span>`:`<b>${SS[i].n}</b> ${t0}℃→${t1}℃ 냉각<br>용해도 ${s1.toFixed(1)}g > 용질 ${a}g<br><span class="hl gr">석출 없음</span>`;
+      else{const ex=Math.max(0,s1-a);inf.innerHTML=`<b>${SS[i].n}</b> ${t0}℃→${t1}℃ 가열<br>용해도: <span class="hl bl">${s0.toFixed(1)}g → ${s1.toFixed(1)}g</span>`+(ex>0&&a>s0?`<br>추가 용해: <span class="hl gr">${ex.toFixed(1)}g</span>`:'')}
+    }
+  })();
+}
+
+function resetHC(){hcM=null;ge('infoH').innerHTML='가열·냉각 시 <span class="hl bl">용해</span> 및 <span class="hl or">석출</span> 변화를 관찰합니다.';render()}
+
+// ===== TABS =====
+function tabGo(n){
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',['explore','hc','quiz','notes'][i]===n));
+  document.querySelectorAll('.tc').forEach(e=>e.classList.remove('on'));
+  ge('tc-'+n).classList.add('on');
+  if(n==='quiz'&&!qzOn)initQ();
+}
+
+// ===== QUIZ =====
+const Q=[
+  {q:'20℃에서 물 100g에 용해되는 양이 가장 많은 물질은?',o:['질산 칼륨','질산 나트륨','염화 나트륨','붕산'],a:1,x:'20℃에서 질산 나트륨의 용해도가 약 88g으로 가장 높습니다.'},
+  {q:'온도에 따른 용해도 차이가 가장 큰 물질은?',o:['질산 칼륨','염화 나트륨','황산 구리(II)','붕산'],a:0,x:'질산 칼륨은 0℃ 약 13g → 100℃ 약 246g으로 차이가 가장 큽니다.'},
+  {q:'온도에 따른 용해도 변화가 가장 작은 물질은?',o:['질산 나트륨','황산 구리(II)','염화 나트륨','질산 칼륨'],a:2,x:'염화 나트륨은 0℃ 약 35.7g → 100℃ 약 39.8g으로 변화가 가장 작습니다.'},
+  {q:'60℃에서 질산 칼륨 80g을 물 100g에 녹인 용액을 포화 용액으로 만들려면 얼마를 더 넣어야 하는가?',o:['약 10g','약 20g','약 30g','약 40g'],a:2,x:'60℃ 질산 칼륨 용해도 ≈ 110g이므로 110−80 = 약 30g 더 필요합니다.'},
+  {q:'80℃ 포화 질산 칼륨 용액(물 100g)을 20℃로 냉각하면 석출량은?',o:['약 100g','약 117g','약 137g','약 150g'],a:2,x:'80℃ 용해도 약 169g − 20℃ 용해도 약 32g = 약 137g 석출됩니다.'},
+  {q:'40℃에서 용해도가 가장 낮은 물질은?',o:['붕산','황산 구리(II)','염화 칼륨','염화 나트륨'],a:0,x:'40℃에서 붕산의 용해도는 약 10.5g으로 가장 낮습니다.'},
+  {q:'60℃에서 물 100g에 질산 나트륨 100g을 넣으면 이 용액의 상태는?',o:['불포화','포화','과포화(석출)','판단 불가'],a:0,x:'60℃ 질산 나트륨 용해도 ≈ 125g이므로 100g은 모두 녹아 불포화입니다.'},
+  {q:'황산 구리(II)의 60℃ 포화 용액(물 100g)을 20℃로 냉각하면 석출량은?',o:['약 9g','약 14g','약 19g','약 25g'],a:2,x:'60℃ 용해도 약 40g − 20℃ 용해도 약 21g = 약 19g 석출됩니다.'},
+  {q:'50℃에서 물 200g에 염화 칼륨을 최대로 녹이면 몇 g까지 녹는가?',o:['43g','63g','86g','100g'],a:2,x:'50℃ 염화 칼륨 용해도 ≈ 43g/100g물이므로 200g 물에는 약 86g 녹습니다.'},
+  {q:'온도가 올라갈수록 용해도 곡선의 기울기가 가장 급해지는 물질은?',o:['염화 나트륨','질산 칼륨','염화 칼륨','붕산'],a:1,x:'질산 칼륨은 고온으로 갈수록 용해도가 급격히 증가합니다.'}
+];
+
+let qzOn=false,qI=0,qA=[];
+function initQ(){qzOn=true;qI=0;qA=Array(Q.length).fill(-1);rndQ()}
+
+function rndQ(){
+  const b=ge('qzBox'),sc=qA.reduce((s,a,i)=>s+(a===Q[i].a?1:0),0);
+  if(qI>=Q.length){
+    const c=sc>=10?'p':sc>=8?'g':sc>=5?'m':'l';
+    const m=sc>=10?'🎉 완벽합니다! 용해도 마스터!':sc>=8?'👏 훌륭해요!':sc>=5?'👍 조금 더 공부해보세요.':'📚 그래프를 다시 살펴보세요!';
+    b.innerHTML=`<div class="qz-res"><div class="big ${c}">${sc}/10</div><div class="mg">${m}</div><div class="qz-pg" style="justify-content:center;margin-bottom:14px;gap:4px">${qA.map((a,i)=>`<div class="qd ${a===Q[i].a?'ok':'no'}"></div>`).join('')}</div><button class="btn rs" onclick="initQ()" style="max-width:160px;margin:0 auto">↺ 다시 풀기</button></div>`;
+    return;
+  }
+  const q=Q[qI],ad=qA[qI]>=0;
+  b.innerHTML=`
+    <div class="qz-hd"><div class="qz-sc">${sc}/10 점</div><div class="qz-pg">${Q.map((_,i)=>{let c='';if(qA[i]>=0)c=qA[i]===Q[i].a?'ok':'no';else if(i===qI)c='cur';return`<div class="qd ${c}"></div>`}).join('')}</div></div>
+    <div class="qz-q"><div class="qn">Q${qI+1} / ${Q.length}</div><div class="qt">${q.q}</div></div>
+    <div class="qz-opts">${q.o.map((o,i)=>{let c='qo';if(ad){c+=' dis';if(i===qA[qI]&&i===q.a)c+=' sel ok-a';else if(i===qA[qI])c+=' sel no-a';else if(i===q.a)c+=' show-ok'}return`<button class="${c}" onclick="ansQ(${i})">${o}</button>`}).join('')}</div>
+    ${ad?`<div class="info" style="margin-top:8px">${q.x}</div>`:''}
+    <div class="qz-nav"><button onclick="qI--;rndQ()" ${qI<=0?'disabled':''}>← 이전</button><button onclick="qI++;rndQ()" ${!ad?'disabled':''}>${qI>=Q.length-1?'결과 보기 →':'다음 →'}</button></div>`;
+}
+
+function ansQ(i){if(qA[qI]>=0)return;qA[qI]=i;rndQ()}
+
+// ===== INIT =====
+window.addEventListener('resize',()=>{render()});
+mkList('sl1','main');mkList('sl2','hc');
+render();
+</script>
+</body>
+</html>
