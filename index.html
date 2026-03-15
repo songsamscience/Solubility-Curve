@@ -357,23 +357,70 @@ function cv_(n){ return getComputedStyle(document.documentElement).getPropertyVa
 // ===== DATA =====
 const SS=[
   {n:'질산 나트륨',c:'#e65100',cd:'#ff9100',d:{0:73,10:80,20:88,30:96,40:105,50:114,60:125,70:136,80:148,90:163,100:180}},
-  {n:'질산 칼륨',c:'#c2185b',cd:'#f06292',d:{0:13,10:20,20:32,30:45,40:64,50:86,60:110,70:138,80:169,90:200,100:246}},
+  {n:'질산 칼륨',c:'#c2185b',cd:'#f06292',d:{0:13,10:20,20:32,30:45,40:64,50:86,60:110,70:138,80:169,90:205,100:246}},
   {n:'염화 칼륨',c:'#6a1b9a',cd:'#ba68c8',d:{0:28,10:31,20:34,30:37,40:40,50:43,60:46,70:49,80:52,90:55,100:58}},
   {n:'황산 구리(II)',c:'#00695c',cd:'#4db6ac',d:{0:14,10:17,20:21,30:25,40:29,50:34,60:40,70:47,80:55,90:64,100:75}},
   {n:'염화 나트륨',c:'#f57f17',cd:'#ffd54f',d:{0:35.7,10:35.8,20:36,30:36.3,40:36.6,50:37,60:37.3,70:37.8,80:38.4,90:39,100:39.8}},
-  {n:'붕산',c:'#0277bd',cd:'#4fc3f7',d:{0:2.7,10:3.6,20:5,30:7.2,40:10.5,50:14.8,60:20.2,70:27,80:34,90:41,100:50}}
+  {n:'붕산',c:'#0277bd',cd:'#4fc3f7',d:{0:2.7,10:3.6,20:5,30:7.2,40:10.5,50:14.8,60:20.2,70:27,80:35,90:44,100:55}}
 ];
 function sC(i){return isDark()?SS[i].cd:SS[i].c}
 
 let sel=0,temp=40,amt=30,hcSel=0,hcM=null,af=null;
 
+// Monotone cubic spline interpolation (Fritsch–Carlson)
+// Precompute spline coefficients per substance for smooth curves
+const splineCache=[];
+
+function buildSpline(i){
+  const d=SS[i].d;
+  const xs=Object.keys(d).map(Number).sort((a,b)=>a-b);
+  const ys=xs.map(x=>d[x]);
+  const n=xs.length;
+
+  // Compute slopes of secant lines
+  const delta=[];
+  for(let k=0;k<n-1;k++) delta[k]=(ys[k+1]-ys[k])/(xs[k+1]-xs[k]);
+
+  // Initial tangents
+  const m=[];
+  m[0]=delta[0];
+  for(let k=1;k<n-1;k++) m[k]=(delta[k-1]+delta[k])/2;
+  m[n-1]=delta[n-2];
+
+  // Monotonicity constraint (Fritsch-Carlson)
+  for(let k=0;k<n-1;k++){
+    if(Math.abs(delta[k])<1e-12){m[k]=0;m[k+1]=0;continue}
+    const a=m[k]/delta[k], b=m[k+1]/delta[k];
+    const s=a*a+b*b;
+    if(s>9){const t=3/Math.sqrt(s);m[k]=t*a*delta[k];m[k+1]=t*b*delta[k]}
+  }
+
+  return {xs,ys,m};
+}
+
+function solSpline(sp,t){
+  const{xs,ys,m}=sp;
+  if(t<=xs[0])return ys[0];
+  if(t>=xs[xs.length-1])return ys[xs.length-1];
+  // Find interval
+  let k=0;
+  for(let j=0;j<xs.length-1;j++){if(t>=xs[j]&&t<=xs[j+1]){k=j;break}}
+  const h=xs[k+1]-xs[k];
+  const tt=(t-xs[k])/h;
+  const tt2=tt*tt, tt3=tt2*tt;
+  // Hermite basis
+  const h00=2*tt3-3*tt2+1;
+  const h10=tt3-2*tt2+tt;
+  const h01=-2*tt3+3*tt2;
+  const h11=tt3-tt2;
+  return h00*ys[k]+h10*h*m[k]+h01*ys[k+1]+h11*h*m[k+1];
+}
+
+// Build splines on init
+for(let i=0;i<SS.length;i++) splineCache[i]=buildSpline(i);
+
 function sol(i,t){
-  const d=SS[i].d,ks=Object.keys(d).map(Number);
-  if(t<=ks[0])return d[ks[0]];
-  if(t>=ks[ks.length-1])return d[ks[ks.length-1]];
-  for(let k=0;k<ks.length-1;k++)
-    if(t>=ks[k]&&t<=ks[k+1])return d[ks[k]]+(t-ks[k])/(ks[k+1]-ks[k])*(d[ks[k+1]]-d[ks[k]]);
-  return 0;
+  return solSpline(splineCache[i],t);
 }
 
 // ===== CANVAS =====
