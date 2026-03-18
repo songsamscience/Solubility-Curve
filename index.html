@@ -1,424 +1,881 @@
 <!DOCTYPE html>
-
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <title>송쌤과학 용해도 곡선 분석 시뮬레이션</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=Orbitron:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ========= THEME ========= */
+/* ============================================================
+   THEME VARIABLES — Google Material Design 3 Inspired
+   ============================================================ */
 :root, [data-theme="light"] {
-  --bg:#f0f4f9; --card:#fff; --card-hd:#f6f9ff; --graph-bg:#fafcff;
-  --grid:#e2e8f0; --grid2:#f0f2f5; --axis:#90a4ae; --ax-txt:#546e7a; --ax-title:#37474f;
-  --lbl-bg:rgba(255,255,255,0.93); --lbl-bd:rgba(0,0,0,0.06);
-  --sol-bg:rgba(255,255,255,0.95); --red-bg:rgba(255,245,245,0.95);
-  --gv:rgba(21,101,192,0.16); --gh:rgba(21,101,192,0.09);
-  --blue:#1565c0; --blue-lt:#e3f0ff; --green:#2e7d32; --orange:#e65100; --red:#c62828;
-  --txt:#1a2a3a; --txt2:#455a64; --txt3:#78909c; --border:#dfe6ed;
-  --shadow:0 2px 12px rgba(0,0,0,0.06);
-  --inp-bg:#f0f4f8; --sl-l:#90caf9; --sl-r:#ef9a9a; --thumb:#fff;
-  --tab-bg:#eef2f7; --tab-on:#fff;
-  --info-bg:#f0f7ff; --info-bd:#dce8f8;
-  --qbg:#f0f4f8; --qo-bg:#fff; --qo-ok:#e8f5e9; --qo-no:#ffebee; --qo-sh:#f1f8e9;
-  --ht-bg:#fff5f5; --ht-bd:#ffcdd2; --cl-bg:#f0f7ff; --cl-bd:#bbdefb;
-  --rs-bg:#fafafa; --rs-bd:#e0e0e0;
-  --leg-bg:#f5f8fc; --dot-e:#e0e0e0; --dot-b:#bbb;
-  --tog-bg:#dce4ee; --tog-k:#fff; --tog-i:'☀️';
-  --dot-outline:#fff;
+  --surface: #f8fafb;
+  --surface-container: #ffffff;
+  --surface-container-high: #f1f4f8;
+  --surface-variant: #eef1f6;
+  --on-surface: #1d1b20;
+  --on-surface-variant: #49454f;
+  --outline: #dde1e6;
+  --outline-variant: #c4c7cc;
+  --primary: #1a73e8;
+  --primary-container: #d3e3fd;
+  --on-primary-container: #0b3d91;
+  --secondary: #5f6368;
+  --tertiary: #188038;
+  --error: #d93025;
+  --error-container: #fce8e6;
+  --warning: #e37400;
+  --success: #188038;
+  --success-container: #e6f4ea;
+  --graph-bg: #fafcff;
+  --grid-major: #e0e4ea;
+  --grid-minor: #f0f2f5;
+  --axis: #9aa0a6;
+  --axis-text: #5f6368;
+  --axis-title: #3c4043;
+  --label-bg: rgba(255,255,255,0.94);
+  --label-bd: rgba(0,0,0,0.06);
+  --sol-bg: rgba(255,255,255,0.96);
+  --red-bg: rgba(217,48,37,0.06);
+  --guide-v: rgba(26,115,232,0.14);
+  --guide-h: rgba(26,115,232,0.08);
+  --dot-outline: #fff;
+  --elevation-1: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --elevation-2: 0 2px 6px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+  --slider-track: linear-gradient(90deg, #90caf9, #ef9a9a);
+  --thumb: #fff;
+  --toggle-bg: #dadce0;
+  --toggle-knob: #fff;
+  --toggle-icon: '☀️';
+  --input-bg: #f1f3f4;
+  --tab-bg: #f1f3f4;
+  --tab-active: #fff;
+  --chip-bg: #f1f3f4;
+  --chip-active-bg: #d3e3fd;
+  --chip-active-bd: #1a73e8;
+  --info-bg: #f8f9ff;
+  --info-bd: #d3e3fd;
+  --quiz-bg: #f1f3f4;
+  --quiz-opt-bg: #fff;
+  --quiz-correct: #e6f4ea;
+  --quiz-wrong: #fce8e6;
+  --quiz-show: #e6f4ea;
+  --heat-bg: #fce8e6;
+  --heat-bd: #f28b82;
+  --cool-bg: #e8f0fe;
+  --cool-bd: #8ab4f8;
+  --reset-bg: #f1f3f4;
+  --reset-bd: #dadce0;
 }
+
 [data-theme="dark"] {
-  --bg:#0d1520; --card:#15202e; --card-hd:#1a2838; --graph-bg:#111c2a;
-  --grid:#1e3044; --grid2:#172536; --axis:#4a6275; --ax-txt:#7e9aae; --ax-title:#a0b8c8;
-  --lbl-bg:rgba(17,28,42,0.93); --lbl-bd:rgba(255,255,255,0.08);
-  --sol-bg:rgba(17,28,42,0.95); --red-bg:rgba(40,18,18,0.94);
-  --gv:rgba(66,165,245,0.16); --gh:rgba(66,165,245,0.09);
-  --blue:#42a5f5; --blue-lt:rgba(66,165,245,0.12); --green:#66bb6a; --orange:#ffa726; --red:#ef5350;
-  --txt:#e0eaf4; --txt2:#a0b4c4; --txt3:#6a8698; --border:#1e3044;
-  --shadow:0 2px 16px rgba(0,0,0,0.25);
-  --inp-bg:#0d1520; --sl-l:#1565c0; --sl-r:#c62828; --thumb:#ccd8e4;
-  --tab-bg:#0d1520; --tab-on:#1a2838;
-  --info-bg:#111e2e; --info-bd:#1e3044;
-  --qbg:#0d1520; --qo-bg:#15202e; --qo-ok:rgba(46,125,50,0.18); --qo-no:rgba(198,40,40,0.18); --qo-sh:rgba(46,125,50,0.12);
-  --ht-bg:rgba(198,40,40,0.08); --ht-bd:rgba(198,40,40,0.3);
-  --cl-bg:rgba(21,101,192,0.08); --cl-bd:rgba(21,101,192,0.3);
-  --rs-bg:rgba(255,255,255,0.04); --rs-bd:#2a3a4a;
-  --leg-bg:rgba(255,255,255,0.03); --dot-e:#2a3a4a; --dot-b:#3a4a5a;
-  --tog-bg:#1a2838; --tog-k:#42a5f5; --tog-i:'🌙';
-  --dot-outline:#1a2838;
+  --surface: #111318;
+  --surface-container: #1b1e24;
+  --surface-container-high: #22262d;
+  --surface-variant: #2a2e35;
+  --on-surface: #e3e3e8;
+  --on-surface-variant: #c4c6cc;
+  --outline: #3a3e45;
+  --outline-variant: #555a62;
+  --primary: #8ab4f8;
+  --primary-container: #1a3a5c;
+  --on-primary-container: #d3e3fd;
+  --secondary: #9aa0a6;
+  --tertiary: #81c995;
+  --error: #f28b82;
+  --error-container: #3c1410;
+  --warning: #fdd663;
+  --success: #81c995;
+  --success-container: #0d3016;
+  --graph-bg: #171b22;
+  --grid-major: #2a3040;
+  --grid-minor: #1f2530;
+  --axis: #5f6975;
+  --axis-text: #8a919a;
+  --axis-title: #b0b8c1;
+  --label-bg: rgba(23,27,34,0.94);
+  --label-bd: rgba(255,255,255,0.08);
+  --sol-bg: rgba(23,27,34,0.96);
+  --red-bg: rgba(242,139,130,0.1);
+  --guide-v: rgba(138,180,248,0.14);
+  --guide-h: rgba(138,180,248,0.08);
+  --dot-outline: #1b1e24;
+  --elevation-1: 0 1px 3px rgba(0,0,0,0.3);
+  --elevation-2: 0 2px 8px rgba(0,0,0,0.4);
+  --slider-track: linear-gradient(90deg, #1a3a5c, #3c1410);
+  --thumb: #c4c6cc;
+  --toggle-bg: #2a2e35;
+  --toggle-knob: #8ab4f8;
+  --toggle-icon: '🌙';
+  --input-bg: #22262d;
+  --tab-bg: #22262d;
+  --tab-active: #2a2e35;
+  --chip-bg: #22262d;
+  --chip-active-bg: #1a3a5c;
+  --chip-active-bd: #8ab4f8;
+  --info-bg: #1a2030;
+  --info-bd: #2a3a50;
+  --quiz-bg: #22262d;
+  --quiz-opt-bg: #1b1e24;
+  --quiz-correct: rgba(129,201,149,0.15);
+  --quiz-wrong: rgba(242,139,130,0.15);
+  --quiz-show: rgba(129,201,149,0.1);
+  --heat-bg: rgba(242,139,130,0.08);
+  --heat-bd: rgba(242,139,130,0.3);
+  --cool-bg: rgba(138,180,248,0.08);
+  --cool-bd: rgba(138,180,248,0.3);
+  --reset-bg: #22262d;
+  --reset-bd: #3a3e45;
 }
 
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html{font-size:16px}
-
-body{
-font-family:‘Noto Sans KR’,-apple-system,sans-serif;
-background:var(–bg);color:var(–txt);
-min-height:100vh;line-height:1.5;
--webkit-font-smoothing:antialiased;
-transition:background .3s,color .3s;
+/* ============================================================
+   BASE RESET
+   ============================================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 16px; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'Google Sans', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--surface);
+  color: var(--on-surface);
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.25s ease, color 0.25s ease;
 }
 
-.wrap{max-width:1200px;margin:0 auto;padding:12px}
-
-/* ===== HEADER ===== */
-.hdr{text-align:center;padding:14px 12px 8px;position:relative}
-.hdr h1{font-size:1.3rem;font-weight:900;color:var(–blue);margin-bottom:2px;line-height:1.3}
-.hdr .sub{font-size:0.76rem;color:var(–txt3);letter-spacing:.5px}
-.copy-tag{display:inline-block;margin-top:4px;font-size:.64rem;color:var(–txt3);background:var(–card);border:1px solid var(–border);padding:3px 10px;border-radius:16px;font-family:‘JetBrains Mono’,monospace}
-.copy-tag b{color:var(–blue)}
-
-/* TOGGLE */
-.theme-toggle{
-position:absolute;top:12px;right:10px;
-width:50px;height:26px;border-radius:13px;
-background:var(–tog-bg);border:1px solid var(–border);
-cursor:pointer;padding:2px;display:flex;align-items:center;
-transition:background .3s;
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px;
 }
-.theme-toggle .knob{
-width:20px;height:20px;border-radius:50%;
-background:var(–tog-k);box-shadow:0 1px 4px rgba(0,0,0,.2);
-transition:transform .3s,background .3s;
-display:flex;align-items:center;justify-content:center;font-size:11px;
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 16px;
+  margin-top: 12px;
+  align-items: start;
 }
-.theme-toggle .knob::after{content:var(–tog-i)}
-[data-theme=“dark”] .theme-toggle .knob{transform:translateX(24px)}
 
-/* ===== DIGITAL ===== */
-.digi-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}
-.digi{background:var(–card);border-radius:10px;padding:8px 10px;border:1px solid var(–border);box-shadow:var(–shadow);position:relative;overflow:hidden;transition:background .3s,border-color .3s}
-.digi::before{content:’’;position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,var(–blue),var(–green))}
-.digi .lbl{font-size:.55rem;color:var(–txt3);text-transform:uppercase;letter-spacing:1px;font-family:‘JetBrains Mono’,monospace;margin-bottom:1px}
-.digi .val{font-family:‘Orbitron’,sans-serif;font-size:1.05rem;font-weight:700;color:var(–blue)}
-.digi .val .u{font-size:.5rem;color:var(–txt3);font-weight:400;margin-left:1px}
-.digi.st .val{font-family:‘Noto Sans KR’,sans-serif;font-size:.82rem;font-weight:800}
-.digi.st .val.unsat{color:var(–green)} .digi.st .val.sat{color:var(–orange)} .digi.st .val.super{color:var(–red)}
-
-/* ===== LAYOUT ===== */
-.grid{display:grid;grid-template-columns:1fr 350px;gap:14px;margin-top:8px;align-items:start}
-
-/* ===== CARD ===== */
-.card{background:var(–card);border:1px solid var(–border);border-radius:14px;overflow:hidden;box-shadow:var(–shadow);transition:background .3s,border-color .3s}
-.card-hd{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(–border);background:var(–card-hd);font-size:.83rem;font-weight:700;transition:background .3s}
-.card-bd{padding:12px}
-
-/* ===== GRAPH ===== */
-.graph-wrap{background:var(–graph-bg);border:1px solid var(–border);border-radius:10px;padding:4px;position:relative;transition:background .3s,border-color .3s;touch-action:pan-y pinch-zoom}
-canvas{width:100%;display:block;border-radius:6px;touch-action:none}
-.legend-bar{display:flex;align-items:center;gap:12px;padding:5px 8px;margin-top:5px;font-size:.7rem;color:var(–txt2);background:var(–leg-bg);border-radius:6px;flex-wrap:wrap;transition:background .3s}
-.legend-bar .li{display:flex;align-items:center;gap:4px;white-space:nowrap}
-.ldot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.ldot.rd{background:#e53935;border:2px solid #c62828} .ldot.bl{background:transparent;border:2px solid var(–blue)}
-
-/* ===== SUBS ===== */
-.subs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:10px}
-.sub-btn{display:flex;align-items:center;gap:5px;padding:7px 9px;border-radius:8px;border:1.5px solid transparent;background:var(–inp-bg);cursor:pointer;font-family:‘Noto Sans KR’,sans-serif;color:var(–txt);font-size:.74rem;font-weight:500;transition:all .15s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sub-btn:active{background:var(–blue-lt)}
-.sub-btn.on{background:var(–blue-lt);border-color:var(–blue);font-weight:700}
-.sub-btn .cd{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.sub-btn .sv{margin-left:auto;font-family:‘JetBrains Mono’,monospace;font-size:.62rem;color:var(–txt3);flex-shrink:0}
-
-/* ===== TABS ===== */
-.tabs{display:flex;gap:2px;background:var(–tab-bg);border-radius:10px;padding:3px;margin-bottom:12px;transition:background .3s}
-.tab{flex:1;padding:8px 4px;border:none;background:transparent;color:var(–txt3);font-family:‘Noto Sans KR’,sans-serif;font-size:.78rem;font-weight:600;border-radius:8px;cursor:pointer;transition:all .15s}
-.tab.on{background:var(–tab-on);color:var(–blue);box-shadow:var(–shadow)}
-.tc{display:none}.tc.on{display:block}
-
-/* ===== SLIDER ===== */
-.sg{margin-bottom:10px}
-.sg .sl{display:flex;justify-content:space-between;font-size:.76rem;color:var(–txt2);margin-bottom:4px;font-weight:500}
-.sg .sl .v{font-family:‘Orbitron’,sans-serif;color:var(–blue);font-weight:700;font-size:.8rem}
-input[type=“range”]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:4px;background:linear-gradient(90deg,var(–sl-l),var(–sl-r));outline:none}
-input[type=“range”]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(–thumb);border:3px solid var(–blue);box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:grab}
-input[type=“range”]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(–thumb);border:3px solid var(–blue);box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:grab}
-
-/* ===== INPUT (16px prevents iOS zoom) ===== */
-.inp-grp{margin-bottom:10px}
-.inp-grp .il{font-size:.76rem;color:var(–txt2);display:block;margin-bottom:4px;font-weight:500}
-.inp-row{display:flex;gap:6px;align-items:center}
-.inp-row input[type=“number”]{flex:1;padding:9px 12px;border-radius:8px;border:1.5px solid var(–border);background:var(–inp-bg);color:var(–txt);font-family:‘Orbitron’,sans-serif;font-size:16px;outline:none;min-width:0;transition:border-color .2s}
-.inp-row input:focus{border-color:var(–blue);box-shadow:0 0 0 3px rgba(21,101,192,.12)}
-.inp-row .uu{font-size:.75rem;color:var(–txt3);flex-shrink:0}
-
-/* ===== BUTTONS ===== */
-.btns{display:flex;gap:6px;margin-bottom:10px}
-.btn{flex:1;padding:10px 4px;border-radius:10px;border:1.5px solid;background:transparent;cursor:pointer;font-family:‘Noto Sans KR’,sans-serif;font-size:.78rem;font-weight:700;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:3px}
-.btn.ht{border-color:var(–ht-bd);color:var(–red);background:var(–ht-bg)}
-.btn.cl{border-color:var(–cl-bd);color:var(–blue);background:var(–cl-bg)}
-.btn.rs{border-color:var(–rs-bd);color:var(–txt3);background:var(–rs-bg)}
-
-/* ===== INFO ===== */
-.info{background:var(–info-bg);border:1px solid var(–info-bd);border-radius:10px;padding:10px 12px;font-size:.78rem;line-height:1.7;color:var(–txt2);margin-top:8px;transition:background .3s,border-color .3s}
-.info b{color:var(–txt)} .info .hl{font-weight:700}
-.info .hl.bl{color:var(–blue)} .info .hl.or{color:var(–orange)}
-.info .hl.rd{color:var(–red)} .info .hl.gr{color:var(–green)}
-
-/* ===== QUIZ ===== */
-.qz-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.qz-sc{font-family:‘Orbitron’,sans-serif;font-size:.88rem;color:var(–blue);font-weight:700}
-.qz-pg{display:flex;gap:3px;flex-wrap:wrap}
-.qd{width:10px;height:10px;border-radius:50%;background:var(–dot-e);border:1.5px solid var(–dot-b)}
-.qd.ok{background:var(–green);border-color:var(–green)} .qd.no{background:var(–red);border-color:var(–red)}
-.qd.cur{border-color:var(–blue);box-shadow:0 0 0 3px rgba(21,101,192,.18)}
-.qz-q{background:var(–qbg);border:1px solid var(–border);border-radius:12px;padding:14px;margin-bottom:8px;transition:background .3s}
-.qz-q .qn{font-family:‘Orbitron’,sans-serif;font-size:.6rem;color:var(–blue);margin-bottom:5px;letter-spacing:1.5px}
-.qz-q .qt{font-size:.86rem;font-weight:600;line-height:1.65}
-.qz-opts{display:flex;flex-direction:column;gap:5px}
-.qo{padding:11px 14px;border-radius:10px;border:1.5px solid var(–border);background:var(–qo-bg);cursor:pointer;font-size:.84rem;font-family:‘Noto Sans KR’,sans-serif;color:var(–txt);transition:all .15s;text-align:left}
-.qo:active:not(.dis){background:var(–blue-lt)}
-.qo.sel.ok-a{background:var(–qo-ok);border-color:var(–green);color:var(–green);font-weight:700}
-.qo.sel.no-a{background:var(–qo-no);border-color:var(–red);color:var(–red);font-weight:700}
-.qo.show-ok{border-color:var(–green);color:var(–green);background:var(–qo-sh)}
-.qo.dis{cursor:default;opacity:.55}
-.qz-nav{display:flex;gap:6px;margin-top:10px}
-.qz-nav button{flex:1;padding:10px;border-radius:10px;border:1.5px solid var(–border);background:var(–blue-lt);color:var(–blue);font-family:‘Noto Sans KR’,sans-serif;font-size:.84rem;font-weight:700;cursor:pointer;transition:all .15s}
-.qz-nav button:disabled{opacity:.25;cursor:default}
-.qz-res{text-align:center;padding:20px 12px}
-.qz-res .big{font-family:‘Orbitron’,sans-serif;font-size:2.4rem;font-weight:900;margin-bottom:4px}
-.qz-res .big.p{color:var(–green)} .qz-res .big.g{color:var(–blue)} .qz-res .big.m{color:var(–orange)} .qz-res .big.l{color:var(–red)}
-.qz-res .mg{font-size:.88rem;color:var(–txt2);margin-bottom:14px}
-.hint-txt{font-size:.68rem;color:var(–txt3);margin-bottom:8px}
-
-/* ===== NOTES (내용정리) ===== */
-.notes{font-size:.84rem;line-height:1.85;color:var(–txt)}
-.notes .sec{margin-bottom:16px}
-.notes .sec-title{
-display:flex;align-items:center;gap:6px;
-font-size:.9rem;font-weight:800;color:var(–blue);
-margin-bottom:8px;padding-bottom:6px;
-border-bottom:2px solid var(–blue);
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header {
+  text-align: center;
+  padding: 20px 16px 12px;
+  position: relative;
 }
-.notes .sec-title .num{
-display:inline-flex;align-items:center;justify-content:center;
-width:22px;height:22px;border-radius:6px;
-background:var(–blue);color:#fff;
-font-family:‘Orbitron’,sans-serif;font-size:.65rem;font-weight:700;
-flex-shrink:0;
+.header h1 {
+  font-family: 'Google Sans', 'Noto Sans KR', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 4px;
 }
-[data-theme=“dark”] .notes .sec-title .num{color:#0d1520}
-.notes p{margin-bottom:6px;padding-left:2px}
-.notes .sub-title{font-weight:700;color:var(–txt);margin:10px 0 6px;font-size:.84rem}
-.notes .fact-list{margin:4px 0 8px;padding-left:0;list-style:none}
-.notes .fact-list li{
-position:relative;padding:7px 10px 7px 28px;
-margin-bottom:4px;border-radius:8px;
-background:var(–inp-bg);font-size:.8rem;
-line-height:1.6;transition:background .3s;
+.header .subtitle {
+  font-size: 0.8rem;
+  color: var(--secondary);
+  letter-spacing: 0.3px;
 }
-.notes .fact-list li::before{
-content:‘✦’;position:absolute;left:9px;top:7px;
-color:var(–blue);font-size:.7rem;
+.copyright-badge {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.7rem;
+  color: var(--secondary);
+  background: var(--surface-container);
+  border: 1px solid var(--outline);
+  padding: 4px 14px;
+  border-radius: 100px;
+  font-family: 'JetBrains Mono', monospace;
 }
-.notes .highlight-box{
-margin-top:10px;padding:12px 14px;
-border-radius:10px;border-left:4px solid var(–orange);
-background:var(–info-bg);
-font-size:.82rem;line-height:1.7;
-transition:background .3s;
-}
-.notes .highlight-box .key{color:var(–orange);font-weight:800}
-.notes .highlight-box b{color:var(–txt)}
+.copyright-badge b { color: var(--primary); }
 
-/* ===== QUIZ TOOLBAR ===== */
-.qz-toolbar{
-background:var(–inp-bg);border:1px solid var(–border);
-border-radius:12px;padding:10px;margin-bottom:12px;
-transition:background .3s,border-color .3s;
+/* Theme Toggle */
+.theme-toggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 52px;
+  height: 28px;
+  border-radius: 14px;
+  background: var(--toggle-bg);
+  border: 1px solid var(--outline);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  transition: background 0.3s;
 }
-.qtb-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.qtb-title{font-size:.74rem;font-weight:700;color:var(–blue);letter-spacing:.3px}
-.qtb-status{
-font-size:.68rem;font-weight:800;padding:3px 10px;border-radius:12px;
-transition:all .2s;
+.theme-toggle .knob {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--toggle-knob);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease, background 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
 }
-.qtb-status.unsat{background:rgba(46,125,50,.1);color:var(–green)}
-.qtb-status.sat{background:rgba(230,81,0,.1);color:var(–orange)}
-.qtb-status.super{background:rgba(198,40,40,.1);color:var(–red)}
+.theme-toggle .knob::after { content: var(--toggle-icon); }
+[data-theme="dark"] .theme-toggle .knob { transform: translateX(24px); }
 
-.qtb-subs{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px}
-.qtb-sub{
-padding:4px 8px;border-radius:6px;border:1.5px solid transparent;
-background:var(–card);cursor:pointer;
-font-family:‘Noto Sans KR’,sans-serif;font-size:.68rem;font-weight:500;
-color:var(–txt2);transition:all .15s;
-display:flex;align-items:center;gap:4px;
+/* ============================================================
+   DIGITAL DISPLAY
+   ============================================================ */
+.digi-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 10px 0;
 }
-.qtb-sub:active{transform:scale(.97)}
-.qtb-sub.on{border-color:var(–blue);font-weight:700;color:var(–txt);box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.qtb-sub .sd{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.digi-card {
+  background: var(--surface-container);
+  border-radius: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--outline);
+  box-shadow: var(--elevation-1);
+  position: relative;
+  overflow: hidden;
+  transition: background 0.25s, border-color 0.25s;
+}
+.digi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--tertiary));
+  border-radius: 16px 16px 0 0;
+}
+.digi-card .label {
+  font-size: 0.62rem;
+  color: var(--secondary);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 3px;
+}
+.digi-card .value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+.digi-card .value .unit {
+  font-size: 0.55rem;
+  color: var(--secondary);
+  font-weight: 400;
+  margin-left: 2px;
+}
+.digi-card.status .value {
+  font-family: 'Google Sans', 'Noto Sans KR', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+.digi-card.status .value.unsat { color: var(--success); }
+.digi-card.status .value.sat { color: var(--warning); }
+.digi-card.status .value.super { color: var(--error); }
 
-.qtb-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.qtb-ctrl{display:flex;align-items:center;gap:5px;flex:1;min-width:0}
-.qtb-lbl{font-size:.66rem;color:var(–txt3);font-weight:600;flex-shrink:0}
-.qtb-ctrl input[type=“range”]{flex:1;height:6px;min-width:60px}
-.qtb-ctrl input[type=“number”]{
-width:60px;padding:4px 6px;border-radius:6px;border:1px solid var(–border);
-background:var(–card);color:var(–txt);font-family:‘Orbitron’,sans-serif;
-font-size:16px;outline:none;text-align:center;
+/* ============================================================
+   CARDS
+   ============================================================ */
+.card {
+  background: var(--surface-container);
+  border: 1px solid var(--outline);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--elevation-2);
+  transition: background 0.25s, border-color 0.25s;
 }
-.qtb-ctrl input[type=“number”]:focus{border-color:var(–blue)}
-.qtb-val{font-family:‘Orbitron’,sans-serif;font-size:.7rem;color:var(–blue);font-weight:700;min-width:32px;text-align:right;flex-shrink:0}
-.qtb-unit{font-size:.66rem;color:var(–txt3);flex-shrink:0}
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--outline);
+  background: var(--surface-container-high);
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: background 0.25s;
+}
+.card-body { padding: 16px; }
 
-.qtb-readout{
-margin-top:8px;padding:7px 10px;border-radius:8px;
-background:var(–card);border:1px solid var(–border);
-font-size:.76rem;color:var(–txt2);line-height:1.6;
-display:flex;align-items:center;gap:6px;flex-wrap:wrap;
-transition:background .3s;
+/* ============================================================
+   GRAPH
+   ============================================================ */
+.graph-area {
+  background: var(--graph-bg);
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  padding: 6px;
+  transition: background 0.25s, border-color 0.25s;
+  touch-action: pan-y pinch-zoom;
 }
-.qtb-readout b{color:var(–blue)}
-.qtb-readout .rd-sep{color:var(–border);font-size:.6rem}
+canvas {
+  width: 100%;
+  display: block;
+  border-radius: 8px;
+  touch-action: none;
+}
+.legend-strip {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--on-surface-variant);
+  background: var(--surface-variant);
+  border-radius: 8px;
+  flex-wrap: wrap;
+  transition: background 0.25s;
+}
+.legend-strip .leg-item { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.leg-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.leg-dot.curve { background: transparent; border: 2.5px solid var(--primary); }
+.leg-dot.solute { background: #e53935; border: 2px solid #c62828; }
 
-/* ===== MOBILE ===== */
-@media(max-width:860px){
-.grid{grid-template-columns:1fr}
-.hdr h1{font-size:1.12rem}
+/* ============================================================
+   SUBSTANCE CHIPS (2-column grid)
+   ============================================================ */
+.substance-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 12px;
 }
-@media(max-width:480px){
-.wrap{padding:5px}
-.hdr{padding:10px 8px 6px}
-.hdr h1{font-size:1rem}
-.hdr .sub{font-size:.66rem}
-.digi-row{gap:4px}
-.digi{padding:7px 8px;border-radius:8px}
-.digi .lbl{font-size:.5rem}
-.digi .val{font-size:.9rem}
-.digi .val .u{font-size:.44rem}
-.digi.st .val{font-size:.72rem}
-.card-hd{padding:9px 12px;font-size:.8rem}
-.card-bd{padding:8px}
-.sub-btn{font-size:.66rem;padding:5px 6px;gap:4px}
-.sub-btn .sv{font-size:.54rem}
-.tab{font-size:.73rem;padding:7px 2px}
-.sg .sl{font-size:.72rem}
-.sg .sl .v{font-size:.76rem}
-.btn{font-size:.73rem;padding:9px 3px}
-.info{font-size:.72rem;padding:8px 10px}
-.qz-q .qt{font-size:.8rem}
-.qo{font-size:.78rem;padding:9px 11px}
-.qz-nav button{font-size:.78rem;padding:9px}
-.legend-bar{font-size:.62rem;gap:6px;padding:4px 6px}
-.theme-toggle{top:8px;right:5px;width:44px;height:22px;border-radius:11px}
-.theme-toggle .knob{width:16px;height:16px;font-size:9px}
-[data-theme=“dark”] .theme-toggle .knob{transform:translateX(22px)}
+.sub-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 1.5px solid transparent;
+  background: var(--chip-bg);
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--on-surface);
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.sub-chip:active { transform: scale(0.98); }
+.sub-chip.active {
+  background: var(--chip-active-bg);
+  border-color: var(--chip-active-bd);
+  font-weight: 700;
+}
+.sub-chip .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.sub-chip .sol-val {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--secondary);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   TABS (Google Segmented Button)
+   ============================================================ */
+.tab-strip {
+  display: flex;
+  gap: 0;
+  background: var(--tab-bg);
+  border-radius: 100px;
+  padding: 3px;
+  margin-bottom: 16px;
+  transition: background 0.25s;
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px 6px;
+  border: none;
+  background: transparent;
+  color: var(--secondary);
+  font-family: 'Google Sans', 'Noto Sans KR', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.tab-btn.active {
+  background: var(--tab-active);
+  color: var(--primary);
+  box-shadow: var(--elevation-1);
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ============================================================
+   SLIDER (Material M3)
+   ============================================================ */
+.slider-group { margin-bottom: 14px; }
+.slider-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: var(--on-surface-variant);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.slider-label .val-display {
+  font-family: 'Orbitron', sans-serif;
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--slider-track);
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--thumb);
+  border: 3px solid var(--primary);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.16);
+  cursor: grab;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--thumb);
+  border: 3px solid var(--primary);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.16);
+  cursor: grab;
+}
+
+/* ============================================================
+   INPUT
+   ============================================================ */
+.input-group { margin-bottom: 14px; }
+.input-label {
+  font-size: 0.82rem;
+  color: var(--on-surface-variant);
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.input-row { display: flex; gap: 8px; align-items: center; }
+.input-row input[type="number"] {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--outline);
+  background: var(--input-bg);
+  color: var(--on-surface);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 16px;
+  outline: none;
+  min-width: 0;
+  transition: border-color 0.2s;
+}
+.input-row input[type="number"]:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(26,115,232,0.12);
+}
+.input-row .unit-text { font-size: 0.8rem; color: var(--secondary); flex-shrink: 0; }
+
+/* ============================================================
+   ACTION BUTTONS
+   ============================================================ */
+.action-row { display: flex; gap: 8px; margin-bottom: 14px; }
+.action-btn {
+  flex: 1;
+  padding: 11px 8px;
+  border-radius: 12px;
+  border: 1.5px solid;
+  background: transparent;
+  cursor: pointer;
+  font-family: 'Google Sans', 'Noto Sans KR', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.action-btn.heat { border-color: var(--heat-bd); color: var(--error); background: var(--heat-bg); }
+.action-btn.cool { border-color: var(--cool-bd); color: var(--primary); background: var(--cool-bg); }
+.action-btn.reset { border-color: var(--reset-bd); color: var(--secondary); background: var(--reset-bg); }
+
+/* ============================================================
+   INFO CARD
+   ============================================================ */
+.info-card {
+  background: var(--info-bg);
+  border: 1px solid var(--info-bd);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.82rem;
+  line-height: 1.8;
+  color: var(--on-surface-variant);
+  margin-top: 10px;
+  transition: background 0.25s, border-color 0.25s;
+}
+.info-card b { color: var(--on-surface); }
+.info-card .hl { font-weight: 700; }
+.info-card .hl.bl { color: var(--primary); }
+.info-card .hl.or { color: var(--warning); }
+.info-card .hl.rd { color: var(--error); }
+.info-card .hl.gr { color: var(--success); }
+
+.hint-text {
+  font-size: 0.72rem;
+  color: var(--secondary);
+  margin-bottom: 10px;
+}
+
+/* ============================================================
+   QUIZ
+   ============================================================ */
+.qz-hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.qz-sc { font-family: 'Orbitron', sans-serif; font-size: 0.92rem; color: var(--primary); font-weight: 700; }
+.qz-pg { display: flex; gap: 4px; flex-wrap: wrap; }
+.qd { width: 10px; height: 10px; border-radius: 50%; background: var(--outline); border: 1.5px solid var(--outline-variant); }
+.qd.ok { background: var(--success); border-color: var(--success); }
+.qd.no { background: var(--error); border-color: var(--error); }
+.qd.cur { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,115,232,0.18); }
+
+.qz-q {
+  background: var(--quiz-bg);
+  border: 1px solid var(--outline);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 10px;
+  transition: background 0.25s;
+}
+.qz-q .qn { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; color: var(--primary); margin-bottom: 6px; letter-spacing: 1.5px; }
+.qz-q .qt { font-size: 0.9rem; font-weight: 600; line-height: 1.7; }
+
+.qz-opts { display: flex; flex-direction: column; gap: 6px; }
+.qo {
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--outline);
+  background: var(--quiz-opt-bg);
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--on-surface);
+  transition: all 0.15s ease;
+  text-align: left;
+}
+.qo:active:not(.dis) { background: var(--chip-active-bg); }
+.qo.sel.ok-a { background: var(--quiz-correct); border-color: var(--success); color: var(--success); font-weight: 700; }
+.qo.sel.no-a { background: var(--quiz-wrong); border-color: var(--error); color: var(--error); font-weight: 700; }
+.qo.show-ok { border-color: var(--success); color: var(--success); background: var(--quiz-show); }
+.qo.dis { cursor: default; opacity: 0.5; }
+
+.qz-nav { display: flex; gap: 8px; margin-top: 12px; }
+.qz-nav button {
+  flex: 1; padding: 11px;
+  border-radius: 100px;
+  border: 1.5px solid var(--outline);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  font-family: 'Google Sans', 'Noto Sans KR', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.qz-nav button:disabled { opacity: 0.25; cursor: default; }
+
+.qz-res { text-align: center; padding: 24px 16px; }
+.qz-res .big { font-family: 'Orbitron', sans-serif; font-size: 2.6rem; font-weight: 900; margin-bottom: 6px; }
+.qz-res .big.p { color: var(--success); }
+.qz-res .big.g { color: var(--primary); }
+.qz-res .big.m { color: var(--warning); }
+.qz-res .big.l { color: var(--error); }
+.qz-res .mg { font-size: 0.92rem; color: var(--on-surface-variant); margin-bottom: 16px; }
+
+/* ============================================================
+   QUIZ TOOLBAR
+   ============================================================ */
+.qz-toolbar {
+  background: var(--surface-variant);
+  border: 1px solid var(--outline);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 14px;
+  transition: background 0.25s, border-color 0.25s;
+}
+.qtb-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.qtb-title { font-size: 0.78rem; font-weight: 700; color: var(--primary); }
+.qtb-status {
+  font-size: 0.72rem; font-weight: 700;
+  padding: 4px 12px; border-radius: 100px;
+}
+.qtb-status.unsat { background: var(--success-container); color: var(--success); }
+.qtb-status.sat { background: rgba(227,116,0,0.1); color: var(--warning); }
+.qtb-status.super { background: var(--error-container); color: var(--error); }
+
+.qtb-subs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
+.qtb-sub {
+  padding: 5px 10px; border-radius: 100px;
+  border: 1.5px solid transparent;
+  background: var(--surface-container);
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.72rem; font-weight: 500;
+  color: var(--on-surface-variant);
+  transition: all 0.15s;
+  display: flex; align-items: center; gap: 5px;
+}
+.qtb-sub:active { transform: scale(0.97); }
+.qtb-sub.on {
+  border-color: var(--chip-active-bd);
+  background: var(--chip-active-bg);
+  font-weight: 700;
+  color: var(--on-surface);
+}
+.qtb-sub .sd { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+.qtb-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.qtb-ctrl { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+.qtb-lbl { font-size: 0.72rem; color: var(--secondary); font-weight: 600; flex-shrink: 0; }
+.qtb-ctrl input[type="range"] { flex: 1; height: 6px; min-width: 60px; }
+.qtb-ctrl input[type="number"] {
+  width: 64px; padding: 5px 8px; border-radius: 8px;
+  border: 1px solid var(--outline); background: var(--surface-container);
+  color: var(--on-surface); font-family: 'Orbitron', sans-serif;
+  font-size: 16px; outline: none; text-align: center;
+}
+.qtb-ctrl input[type="number"]:focus { border-color: var(--primary); }
+.qtb-val { font-family: 'Orbitron', sans-serif; font-size: 0.75rem; color: var(--primary); font-weight: 700; min-width: 36px; text-align: right; flex-shrink: 0; }
+.qtb-unit { font-size: 0.7rem; color: var(--secondary); flex-shrink: 0; }
+
+.qtb-readout {
+  margin-top: 10px; padding: 8px 12px; border-radius: 10px;
+  background: var(--surface-container); border: 1px solid var(--outline);
+  font-size: 0.78rem; color: var(--on-surface-variant); line-height: 1.6;
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  transition: background 0.25s;
+}
+.qtb-readout b { color: var(--primary); }
+.qtb-readout .rd-sep { color: var(--outline-variant); }
+
+/* ============================================================
+   NOTES (내용정리)
+   ============================================================ */
+.notes { font-size: 0.88rem; line-height: 1.9; color: var(--on-surface); }
+.notes .sec { margin-bottom: 18px; }
+.notes .sec-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.95rem; font-weight: 800; color: var(--primary);
+  margin-bottom: 10px; padding-bottom: 8px;
+  border-bottom: 2px solid var(--primary);
+}
+.notes .sec-title .num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 8px;
+  background: var(--primary); color: #fff;
+  font-family: 'Orbitron', sans-serif; font-size: 0.7rem; font-weight: 700;
+  flex-shrink: 0;
+}
+[data-theme="dark"] .notes .sec-title .num { color: #111318; }
+.notes p { margin-bottom: 8px; padding-left: 2px; }
+.notes .sub-title { font-weight: 700; color: var(--on-surface); margin: 12px 0 8px; font-size: 0.88rem; }
+.notes .fact-list { margin: 6px 0 10px; padding-left: 0; list-style: none; }
+.notes .fact-list li {
+  position: relative; padding: 9px 12px 9px 30px;
+  margin-bottom: 5px; border-radius: 10px;
+  background: var(--surface-variant); font-size: 0.84rem;
+  line-height: 1.7; transition: background 0.25s;
+}
+.notes .fact-list li::before {
+  content: '✦'; position: absolute; left: 10px; top: 9px;
+  color: var(--primary); font-size: 0.72rem;
+}
+.notes .highlight-box {
+  margin-top: 12px; padding: 14px 16px;
+  border-radius: 12px; border-left: 4px solid var(--warning);
+  background: var(--info-bg);
+  font-size: 0.86rem; line-height: 1.8;
+  transition: background 0.25s;
+}
+.notes .highlight-box .key { color: var(--warning); font-weight: 800; }
+.notes .highlight-box b { color: var(--on-surface); }
+
+/* ============================================================
+   RESPONSIVE — Tablet (601px – 1024px)
+   ============================================================ */
+@media (max-width: 1024px) {
+  .main-grid { grid-template-columns: 1fr 340px; gap: 12px; }
+  .header h1 { font-size: 1.35rem; }
+}
+
+@media (max-width: 860px) {
+  .main-grid { grid-template-columns: 1fr; }
+  .header h1 { font-size: 1.25rem; }
+  .card-body { padding: 14px; }
+  .digi-card { padding: 12px 14px; }
+  .digi-card .value { font-size: 1.1rem; }
+}
+
+/* Mobile (≤ 600px) */
+@media (max-width: 600px) {
+  .wrap { padding: 8px; }
+  .header { padding: 14px 10px 8px; }
+  .header h1 { font-size: 1.08rem; }
+  .header .subtitle { font-size: 0.7rem; }
+  .digi-row { gap: 6px; }
+  .digi-card { padding: 10px 12px; border-radius: 12px; }
+  .digi-card .label { font-size: 0.55rem; }
+  .digi-card .value { font-size: 0.95rem; }
+  .digi-card .value .unit { font-size: 0.46rem; }
+  .digi-card.status .value { font-size: 0.78rem; }
+  .card { border-radius: 12px; }
+  .card-header { padding: 11px 14px; font-size: 0.84rem; }
+  .card-body { padding: 12px; }
+  .sub-chip { font-size: 0.72rem; padding: 7px 10px; }
+  .sub-chip .sol-val { font-size: 0.6rem; }
+  .tab-btn { font-size: 0.76rem; padding: 8px 4px; }
+  .slider-label { font-size: 0.76rem; }
+  .action-btn { font-size: 0.76rem; padding: 10px 4px; }
+  .info-card { font-size: 0.76rem; padding: 10px 12px; }
+  .qz-q .qt { font-size: 0.84rem; }
+  .qo { font-size: 0.82rem; padding: 10px 14px; }
+  .qz-nav button { font-size: 0.82rem; padding: 10px; }
+  .legend-strip { font-size: 0.68rem; gap: 10px; }
+  .theme-toggle { top: 10px; right: 8px; width: 46px; height: 24px; }
+  .theme-toggle .knob { width: 18px; height: 18px; font-size: 10px; }
+  [data-theme="dark"] .theme-toggle .knob { transform: translateX(22px); }
+  .qtb-sub { font-size: 0.66rem; padding: 4px 8px; }
 }
 </style>
-
 </head>
 <body>
 <div class="wrap">
-  <div class="hdr">
+  <div class="header">
     <h1>송쌤과학 용해도 곡선 분석 시뮬레이션</h1>
-    <div class="sub">Solubility Curve Analysis Simulator</div>
-    <div class="copy-tag">© <b>송쌤과학</b> All Rights Reserved</div>
+    <div class="subtitle">Solubility Curve Analysis Simulator</div>
+    <div class="copyright-badge">© <b>송쌤과학</b> All Rights Reserved</div>
     <div class="theme-toggle" onclick="toggleTheme()"><div class="knob"></div></div>
   </div>
 
   <div class="digi-row">
-    <div class="digi"><div class="lbl">TEMPERATURE</div><div class="val" id="dT">40<span class="u">℃</span></div></div>
-    <div class="digi"><div class="lbl">SOLUBILITY</div><div class="val" id="dS">105.0<span class="u">g/100g H₂O</span></div></div>
-    <div class="digi st"><div class="lbl">STATUS</div><div class="val unsat" id="dSt">불포화</div></div>
+    <div class="digi-card"><div class="label">TEMPERATURE</div><div class="value" id="dT">40<span class="unit">℃</span></div></div>
+    <div class="digi-card"><div class="label">SOLUBILITY</div><div class="value" id="dS">105.0<span class="unit">g/100g H₂O</span></div></div>
+    <div class="digi-card status"><div class="label">STATUS</div><div class="value unsat" id="dSt">불포화</div></div>
   </div>
 
-  <div class="grid">
-    <div class="card" id="graphCard">
-      <div class="card-hd"><span>📈</span> 용해도 곡선 그래프</div>
-      <div class="card-bd">
-        <div class="graph-wrap"><canvas id="cv"></canvas></div>
-        <div class="legend-bar">
-          <div class="li"><div class="ldot bl"></div> 용해도 (곡선 위 포인트)</div>
-          <div class="li"><div class="ldot rd"></div> <b>용질의 양</b> (투입 g)</div>
+  <div class="main-grid">
+    <div class="card">
+      <div class="card-header"><span>📈</span> 용해도 곡선 그래프</div>
+      <div class="card-body">
+        <div class="graph-area"><canvas id="cv"></canvas></div>
+        <div class="legend-strip">
+          <div class="leg-item"><div class="leg-dot curve"></div> 용해도 (곡선 위 포인트)</div>
+          <div class="leg-item"><div class="leg-dot solute"></div> <b>용질의 양</b> (투입 g)</div>
         </div>
       </div>
     </div>
 
-```
-<div class="card">
-  <div class="card-hd"><span>⚙️</span> 제어판</div>
-  <div class="card-bd">
-    <div class="tabs">
-      <button class="tab on" onclick="tabGo('explore')">탐색</button>
-      <button class="tab" onclick="tabGo('hc')">가열·냉각</button>
-      <button class="tab" onclick="tabGo('quiz')">문제풀기</button>
-      <button class="tab" onclick="tabGo('notes')">내용정리</button>
-    </div>
-
-    <div class="tc on" id="tc-explore">
-      <div class="sg"><div class="sl">온도 <span class="v" id="tvE">40 ℃</span></div><input type="range" id="tsE" min="0" max="100" value="40"></div>
-      <div class="inp-grp"><span class="il">🔴 용질의 양 (물 100g 기준)</span><div class="inp-row"><input type="number" id="amtE" value="30" min="0" max="260" step="1"><span class="uu">g</span></div></div>
-      <div class="hint-txt">* 그래프 위를 터치/드래그하여 온도별 용해도를 확인하세요</div>
-      <div class="subs" id="sl1"></div>
-      <div class="info" id="infoE">온도와 용질의 양을 조절하여 <span class="hl bl">포화·불포화·석출</span> 상태를 확인하세요.</div>
-    </div>
-
-    <div class="tc" id="tc-hc">
-      <div class="hint-txt" style="margin-bottom:8px">물질 선택 → 온도·용질 설정 → 가열/냉각</div>
-      <div class="subs" id="sl2"></div>
-      <div class="sg"><div class="sl">초기 온도 <span class="v" id="tvH">60 ℃</span></div><input type="range" id="tsH" min="0" max="100" value="60"></div>
-      <div class="inp-grp"><span class="il">🔴 용질의 양 (물 100g 기준)</span><div class="inp-row"><input type="number" id="amtH" value="80" min="0" max="260" step="1"><span class="uu">g</span></div></div>
-      <div class="sg"><div class="sl">목표 온도 <span class="v" id="tvT">20 ℃</span></div><input type="range" id="tsT" min="0" max="100" value="20"></div>
-      <div class="btns">
-        <button class="btn ht" onclick="doHC('heat')">🔥 가열</button>
-        <button class="btn cl" onclick="doHC('cool')">❄️ 냉각</button>
-        <button class="btn rs" onclick="resetHC()">↺ 초기화</button>
-      </div>
-      <div class="info" id="infoH">가열·냉각 시 <span class="hl bl">용해</span> 및 <span class="hl or">석출</span> 변화를 관찰합니다.</div>
-    </div>
-
-    <div class="tc" id="tc-notes">
-      <div class="notes">
-        <div class="sec">
-          <div class="sec-title"><span class="num">1</span> 용해도 곡선</div>
-          <p>온도에 따른 물질의 용해도를 그래프로 나타낸 것을 <b>용해도 곡선</b>이라 합니다.</p>
-          <p>고체의 용해도는 대부분 <span class="hl bl">온도가 높아질수록 커집니다.</span></p>
-          <div class="sub-title">📌 용해도 곡선으로 알 수 있는 사실</div>
-          <ul class="fact-list">
-            <li><b>용질의 종류</b>에 따라 녹는 양이 다르다.</li>
-            <li><b>용매의 온도</b>에 따라 녹는 양이 다르다.</li>
-            <li>온도에 따른 물질의 용해도를 <b>쉽게 비교</b>할 수 있다.</li>
-            <li>용액을 냉각할 때 <b>석출되는 용질의 양</b>을 알 수 있다.</li>
-          </ul>
+    <div class="card">
+      <div class="card-header"><span>⚙️</span> 제어판</div>
+      <div class="card-body">
+        <div class="tab-strip">
+          <button class="tab-btn active" onclick="tabGo('explore')">탐색</button>
+          <button class="tab-btn" onclick="tabGo('hc')">가열·냉각</button>
+          <button class="tab-btn" onclick="tabGo('quiz')">문제풀기</button>
+          <button class="tab-btn" onclick="tabGo('notes')">내용정리</button>
         </div>
-        <div class="sec">
-          <div class="sec-title"><span class="num">2</span> 용해도는 물질의 특성</div>
-          <div class="highlight-box">
-            온도와 용매가 같을 때 용해도는 물질마다 다르고, <b>일정한 값</b>을 나타내므로 물질을 구별할 수 있는 <span class="key">물질의 특성</span>이다.
+
+        <div class="tab-panel active" id="tc-explore">
+          <div class="slider-group"><div class="slider-label">온도 <span class="val-display" id="tvE">40 ℃</span></div><input type="range" id="tsE" min="0" max="100" value="40"></div>
+          <div class="input-group"><span class="input-label">🔴 용질의 양 (물 100g 기준)</span><div class="input-row"><input type="number" id="amtE" value="30" min="0" max="260" step="1"><span class="unit-text">g</span></div></div>
+          <div class="hint-text">* 그래프 위를 터치/드래그하여 온도별 용해도를 확인하세요</div>
+          <div class="substance-grid" id="sl1"></div>
+          <div class="info-card" id="infoE">온도와 용질의 양을 조절하여 <span class="hl bl">포화·불포화·석출</span> 상태를 확인하세요.</div>
+        </div>
+
+        <div class="tab-panel" id="tc-hc">
+          <div class="hint-text" style="margin-bottom:10px">물질 선택 → 온도·용질 설정 → 가열/냉각</div>
+          <div class="substance-grid" id="sl2"></div>
+          <div class="slider-group"><div class="slider-label">초기 온도 <span class="val-display" id="tvH">60 ℃</span></div><input type="range" id="tsH" min="0" max="100" value="60"></div>
+          <div class="input-group"><span class="input-label">🔴 용질의 양 (물 100g 기준)</span><div class="input-row"><input type="number" id="amtH" value="80" min="0" max="260" step="1"><span class="unit-text">g</span></div></div>
+          <div class="slider-group"><div class="slider-label">목표 온도 <span class="val-display" id="tvT">20 ℃</span></div><input type="range" id="tsT" min="0" max="100" value="20"></div>
+          <div class="action-row">
+            <button class="action-btn heat" onclick="doHC('heat')">🔥 가열</button>
+            <button class="action-btn cool" onclick="doHC('cool')">❄️ 냉각</button>
+            <button class="action-btn reset" onclick="resetHC()">↺ 초기화</button>
+          </div>
+          <div class="info-card" id="infoH">가열·냉각 시 <span class="hl bl">용해</span> 및 <span class="hl or">석출</span> 변화를 관찰합니다.</div>
+        </div>
+
+        <div class="tab-panel" id="tc-notes">
+          <div class="notes">
+            <div class="sec">
+              <div class="sec-title"><span class="num">1</span> 용해도 곡선</div>
+              <p>온도에 따른 물질의 용해도를 그래프로 나타낸 것을 <b>용해도 곡선</b>이라 합니다.</p>
+              <p>고체의 용해도는 대부분 <span class="hl bl">온도가 높아질수록 커집니다.</span></p>
+              <div class="sub-title">📌 용해도 곡선으로 알 수 있는 사실</div>
+              <ul class="fact-list">
+                <li><b>용질의 종류</b>에 따라 녹는 양이 다르다.</li>
+                <li><b>용매의 온도</b>에 따라 녹는 양이 다르다.</li>
+                <li>온도에 따른 물질의 용해도를 <b>쉽게 비교</b>할 수 있다.</li>
+                <li>용액을 냉각할 때 <b>석출되는 용질의 양</b>을 알 수 있다.</li>
+              </ul>
+            </div>
+            <div class="sec">
+              <div class="sec-title"><span class="num">2</span> 용해도는 물질의 특성</div>
+              <div class="highlight-box">
+                온도와 용매가 같을 때 용해도는 물질마다 다르고, <b>일정한 값</b>을 나타내므로 물질을 구별할 수 있는 <span class="key">물질의 특성</span>이다.
+              </div>
+            </div>
           </div>
         </div>
+
+        <div class="tab-panel" id="tc-quiz">
+          <div class="qz-toolbar">
+            <div class="qtb-top">
+              <span class="qtb-title">📊 그래프 확인</span>
+              <div class="qtb-status" id="qzStatus">불포화</div>
+            </div>
+            <div class="qtb-subs" id="qzSubs"></div>
+            <div class="qtb-controls">
+              <div class="qtb-ctrl">
+                <span class="qtb-lbl">온도</span>
+                <input type="range" id="qzTemp" min="0" max="100" value="40" oninput="qzSetTemp(+this.value)">
+                <span class="qtb-val" id="qzTempV">40℃</span>
+              </div>
+              <div class="qtb-ctrl">
+                <span class="qtb-lbl">🔴 용질</span>
+                <input type="number" id="qzAmt" value="30" min="0" max="260" step="1" oninput="qzSetAmt(+this.value||0)">
+                <span class="qtb-unit">g</span>
+              </div>
+            </div>
+            <div class="qtb-readout" id="qzReadout"></div>
+          </div>
+          <div id="qzBox"></div>
+        </div>
       </div>
     </div>
-
-    <div class="tc" id="tc-quiz">
-      <div class="qz-toolbar">
-        <div class="qtb-top">
-          <span class="qtb-title">📊 그래프 확인</span>
-          <div class="qtb-status" id="qzStatus">불포화</div>
-        </div>
-        <div class="qtb-subs" id="qzSubs"></div>
-        <div class="qtb-controls">
-          <div class="qtb-ctrl">
-            <span class="qtb-lbl">온도</span>
-            <input type="range" id="qzTemp" min="0" max="100" value="40" oninput="qzSetTemp(+this.value)">
-            <span class="qtb-val" id="qzTempV">40℃</span>
-          </div>
-          <div class="qtb-ctrl">
-            <span class="qtb-lbl">🔴 용질</span>
-            <input type="number" id="qzAmt" value="30" min="0" max="260" step="1" oninput="qzSetAmt(+this.value||0)">
-            <span class="qtb-unit">g</span>
-          </div>
-        </div>
-        <div class="qtb-readout" id="qzReadout"></div>
-      </div>
-      <div id="qzBox"></div>
-    </div>
-  </div>
-</div>
-```
-
   </div>
 </div>
+
 
 <script>
 const ge = id => document.getElementById(id);
@@ -724,8 +1181,8 @@ function mkList(id,mode){
   const s=mode==='hc'?hcSel:sel;
   SS.forEach((sub,i)=>{
     const b=document.createElement('button');
-    b.className='sub-btn'+(i===s?' on':'');
-    b.innerHTML=`<span class="cd" style="background:${sC(i)}"></span>${sub.n}<span class="sv ssv" data-i="${i}">${sol(i,temp).toFixed(1)}g</span>`;
+    b.className='sub-chip'+(i===s?' active':'');
+    b.innerHTML=`<span class="dot" style="background:${sC(i)}"></span>${sub.n}<span class="sol-val ssv" data-i="${i}">${sol(i,temp).toFixed(1)}g</span>`;
     b.onclick=()=>{
       if(mode==='hc')hcSel=i; else sel=i;
       mkList('sl1','main');mkList('sl2','hc');
@@ -776,7 +1233,7 @@ cvs.addEventListener('click',e=>{
     SS.forEach((_,i)=>{const d=Math.abs(sol(i,t)-s);if(d<bd){bd=d;bi=i}});
     sel=bi;mkList('sl1','main');mkList('sl2','hc');
     // Sync quiz toolbar substance buttons
-    document.querySelectorAll('.qtb-sub').forEach((b,j)=>b.classList.toggle('on',j===sel));
+    document.querySelectorAll('.qtb-sub').forEach((b,j)=>b.classList.toggle('active',j===sel));
     updQzResult();render();
   }
 });
@@ -831,9 +1288,9 @@ function resetHC(){hcM=null;ge('infoH').innerHTML='가열·냉각 시 <span clas
 
 // ===== TABS =====
 function tabGo(n){
-  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',['explore','hc','quiz','notes'][i]===n));
-  document.querySelectorAll('.tc').forEach(e=>e.classList.remove('on'));
-  ge('tc-'+n).classList.add('on');
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',['explore','hc','quiz','notes'][i]===n));
+  document.querySelectorAll('.tab-panel').forEach(e=>e.classList.remove('active'));
+  ge('tc-'+n).classList.add('active');
   // Sync controls across tabs
   ge('tsE').value=temp;ge('tvE').textContent=temp+' ℃';
   ge('amtE').value=amt;
@@ -870,7 +1327,7 @@ function qzSelSub(v){
   mkList('sl1','main');mkList('sl2','hc');
   // Update toolbar substance buttons
   document.querySelectorAll('.qtb-sub').forEach((b,i)=>{
-    b.classList.toggle('on',i===sel);
+    b.classList.toggle('active',i===sel);
     const dot=b.querySelector('.sd');
     if(dot)dot.style.background=sC(i);
   });
@@ -953,6 +1410,7 @@ window.addEventListener('resize',()=>{render()});
 mkList('sl1','main');mkList('sl2','hc');
 render();
 </script>
-
+</body>
+</html>
 </body>
 </html>
