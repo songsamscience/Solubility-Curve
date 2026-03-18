@@ -983,36 +983,54 @@ function xT(x){return Math.max(0,Math.min(100,(x-M.l)/pW*100))}
 
 // ===== DRAW GRID =====
 function drawGrid(){
-  const mob=isMob(),fs=mob?10:12;
+  const mob=isMob(),fs=mob?9:12,fsSmall=mob?8:10;
   cx.fillStyle=cv_('--graph-bg');cx.fillRect(0,0,W,H);
 
-  // Minor grid
-  cx.lineWidth=.4;cx.strokeStyle=cv_('--grid2');
+  // Minor grid (every 10℃ and every 20g)
+  cx.lineWidth=.35;cx.strokeStyle=cv_('--grid-minor');
   for(let t=10;t<100;t+=10){if(t%20===0)continue;cx.beginPath();cx.moveTo(tX(t),M.t);cx.lineTo(tX(t),M.t+pH);cx.stroke()}
   for(let s=20;s<YMAX;s+=20){if(s%40===0)continue;cx.beginPath();cx.moveTo(M.l,sY(s));cx.lineTo(M.l+pW,sY(s));cx.stroke()}
 
-  // Major grid
-  cx.lineWidth=.7;
-  for(let t=0;t<=100;t+=20){cx.strokeStyle=cv_('--grid');cx.beginPath();cx.moveTo(tX(t),M.t);cx.lineTo(tX(t),M.t+pH);cx.stroke()}
-  for(let s=0;s<=YMAX;s+=40){cx.strokeStyle=cv_('--grid');cx.beginPath();cx.moveTo(M.l,sY(s));cx.lineTo(M.l+pW,sY(s));cx.stroke()}
+  // Major grid (every 20℃ and every 40g)
+  cx.lineWidth=.6;cx.strokeStyle=cv_('--grid-major');
+  for(let t=0;t<=100;t+=20){cx.beginPath();cx.moveTo(tX(t),M.t);cx.lineTo(tX(t),M.t+pH);cx.stroke()}
+  for(let s=0;s<=YMAX;s+=40){cx.beginPath();cx.moveTo(M.l,sY(s));cx.lineTo(M.l+pW,sY(s));cx.stroke()}
 
   // Axes
   cx.strokeStyle=cv_('--axis');cx.lineWidth=1.5;
   cx.beginPath();cx.moveTo(M.l,M.t);cx.lineTo(M.l,M.t+pH);cx.lineTo(M.l+pW,M.t+pH);cx.stroke();
 
-  // Ticks
-  cx.fillStyle=cv_('--ax-txt');
-  cx.font=`500 ${fs}px "JetBrains Mono",monospace`;
+  // X-axis ticks — every 10℃
+  cx.fillStyle=cv_('--axis-text');
+  cx.font=`500 ${fsSmall}px "JetBrains Mono",monospace`;
   cx.textAlign='center';
-  for(let t=0;t<=100;t+=20)cx.fillText(t,tX(t),M.t+pH+16+(mob?0:2));
+  for(let t=0;t<=100;t+=10){
+    const x=tX(t);
+    // Tick mark
+    cx.strokeStyle=cv_('--axis');cx.lineWidth=1;
+    cx.beginPath();cx.moveTo(x,M.t+pH);cx.lineTo(x,M.t+pH+4);cx.stroke();
+    // Label (every 10℃)
+    cx.fillStyle=cv_('--axis-text');
+    cx.fillText(t,x,M.t+pH+15+(mob?0:2));
+  }
+
+  // Y-axis ticks — every 20g
   cx.textAlign='right';
-  for(let s=0;s<=YMAX;s+=40)cx.fillText(s,M.l-6,sY(s)+4);
+  for(let s=0;s<=YMAX;s+=20){
+    const y=sY(s);
+    // Tick mark
+    cx.strokeStyle=cv_('--axis');cx.lineWidth=1;
+    cx.beginPath();cx.moveTo(M.l-4,y);cx.lineTo(M.l,y);cx.stroke();
+    // Label
+    cx.fillStyle=cv_('--axis-text');
+    cx.fillText(s,M.l-7,y+4);
+  }
 
   // Axis titles
-  cx.fillStyle=cv_('--ax-title');
+  cx.fillStyle=cv_('--axis-title');
   cx.font=`700 ${mob?10:13}px "Noto Sans KR",sans-serif`;
   cx.textAlign='center';
-  cx.fillText('온도 (℃)',M.l+pW/2,H-(mob?4:5));
+  cx.fillText('온도 (℃)',M.l+pW/2,H-(mob?3:4));
   cx.save();cx.translate(mob?10:14,M.t+pH/2);cx.rotate(-Math.PI/2);
   cx.fillText('용해도 (g/100g 물)',0,0);cx.restore();
 }
@@ -1033,36 +1051,41 @@ function drawCurves(){
     cx.stroke();cx.restore();
   });
 
-  // Labels — carefully positioned to avoid overlap
-  const mob2=isMob();
-  const fz=mob2?9:12;
-  cx.font=`bold ${fz}px "Noto Sans KR",sans-serif`;
+  // Labels — positioned along curves, no background box
+  const fzL=mob?9:12;
+  cx.font=`bold ${fzL}px "Noto Sans KR",sans-serif`;
 
-  // Custom positions per substance to avoid overlap
   const lps=[
-    {i:0,t:20,side:'above'},  // 질산 나트륨 — above curve at t=20
-    {i:1,t:75,side:'above'},  // 질산 칼륨 — above at t=75 (high area)
-    {i:2,t:80,side:'above'},  // 염화 칼륨 — above at t=80
-    {i:3,t:70,side:'below'},  // 황산 구리 — below at t=70
-    {i:4,t:50,side:'above'},  // 염화 나트륨 — above at t=50
-    {i:5,t:88,side:'below'}   // 붕산 — below at t=88
+    {i:0,t:20,side:'above'},
+    {i:1,t:75,side:'above'},
+    {i:2,t:80,side:'above'},
+    {i:3,t:70,side:'below'},
+    {i:4,t:50,side:'above'},
+    {i:5,t:88,side:'below'}
   ];
 
   lps.forEach(lp=>{
     const v=sol(lp.i,lp.t);
     const bx=tX(lp.t)+4;
-    const by=sY(v)+(lp.side==='above'?(-10):( fz+6));
+    const by=sY(v)+(lp.side==='above'?(-10):(fzL+6));
     const txt=SS[lp.i].n;
     const tw=cx.measureText(txt).width;
+    const lx=Math.max(M.l+2, Math.min(bx, M.l+pW-tw-6));
+    const ly=Math.max(M.t+fzL, Math.min(by, M.t+pH-4));
 
-    // Clamp within graph bounds
-    const cx2=Math.max(M.l+2, Math.min(bx, M.l+pW-tw-8));
-    const cy2=Math.max(M.t+fz, Math.min(by, M.t+pH-4));
-
-    cx.fillStyle=cv_('--lbl-bg');
-    rr(cx,cx2-3,cy2-fz+1,tw+6,fz+4,3);cx.fill();
-    cx.strokeStyle=cv_('--lbl-bd');cx.lineWidth=.5;cx.stroke();
-    cx.fillStyle=sC(lp.i);cx.textAlign='left';cx.fillText(txt,cx2,cy2);
+    // Text with outline for readability (no background box)
+    cx.save();
+    cx.font=`bold ${fzL}px "Noto Sans KR",sans-serif`;
+    cx.textAlign='left';
+    // Stroke outline for contrast
+    cx.strokeStyle=cv_('--graph-bg');
+    cx.lineWidth=3;
+    cx.lineJoin='round';
+    cx.strokeText(txt,lx,ly);
+    // Fill with substance color
+    cx.fillStyle=sC(lp.i);
+    cx.fillText(txt,lx,ly);
+    cx.restore();
   });
 }
 
